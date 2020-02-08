@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <!-- 日志保存路径，可以是绝对路径，也可以是相对路径，
+    logback会自动创建文件夹，这样设置了就可以输出日志文件了  -->
+    <substitutionProperty name="logbase" value="logs/"/>
+    <!-- 这个是要配置输出文件的 -->
+    <!-- ConsoleAppender 控制台输出日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 对日志进行格式化 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%-12thread] %highlight(%-5level) %boldGreen(%class{36}) -%msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- ERROR级别日志 -->
+    <!-- 滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件 RollingFileAppender-->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 过滤器，只记录WARN级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <!-- 最常用的滚动策略，它根据时间来制定滚动策略.既负责滚动也负责出发滚动 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志输出位置  可相对、和绝对路径 -->
+            <fileNamePattern>${logbase}/error.log</fileNamePattern>
+            <!--日志最多保留30天，单个文件最大20mb，该类型日志文件一共不能超过400mb-->
+            <MaxHistory>30</MaxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <totalSizeCap>400MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %class{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- root级别  info将会屏蔽debug级别的日志 -->
+    <root level="info">
+        <!-- 控制台输出 -->
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ERROR"/>
+    </root>
+</configuration>
