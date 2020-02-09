@@ -8,4 +8,5 @@ module swdcfx {
     exports org.swdc.fx;
     exports org.swdc.fx.properties;
     exports org.swdc.fx.anno;
+    exports org.swdc.fx.services;
 }

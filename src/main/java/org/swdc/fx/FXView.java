@@ -7,10 +7,10 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
-import org.swdc.fx.properties.ConfigManager;
-import org.swdc.fx.properties.FXProperties;
 
-public class FXView {
+import java.io.InputStream;
+
+public class FXView extends AppComponent{
 
     private Stage stage;
 
@@ -18,13 +18,9 @@ public class FXView {
 
     private Parent parent;
 
-    private ConfigManager configManager;
-
-    private ViewManager viewManager;
-
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public FXView() {
+    protected boolean loadFxmlView() {
         try {
             stage = new Stage();
             View view = this.getClass().getAnnotation(View.class);
@@ -33,23 +29,38 @@ public class FXView {
             if (path.equals("")) {
                 path = "views/" + getClass().getSimpleName() + ".fxml";
             }
-            parent = loader.load(this.getClass().getModule().getResourceAsStream(path));
-            Scene scene = new Scene(parent);
-
-            stage.initStyle(view.stageStyle());
-            stage.setScene(scene);
-            stage.setTitle(view.title());
-            stage.setResizable(view.resizeable());
-
-            this.loader = loader;
-            this.onInitialized();
+            try(InputStream inputStream = this.getClass().getModule().getResourceAsStream(path)){
+                if (inputStream != null) {
+                    parent = loader.load(inputStream);
+                    Scene scene = new Scene(parent);
+                    stage.setScene(scene);
+                    stage.initStyle(view.stageStyle());
+                    stage.setTitle(view.title());
+                    stage.setResizable(view.resizeable());
+                    this.loader = loader;
+                    return true;
+                }
+                return false;
+            } catch (Exception ex) {
+                logger.error("error when load fxml view",ex);
+                return false;
+            }
         } catch (Exception ex) {
             logger.error("error when load fxml view",ex);
+            return false;
         }
     }
 
     protected void onInitialized() {
 
+    }
+
+    public void setParent(Parent parent) {
+        this.parent = parent;
+    }
+
+    protected Parent createView() {
+        return null;
     }
 
     public Stage getStage() {
@@ -62,19 +73,6 @@ public class FXView {
         } else {
             stage.showAndWait();
         }
-    }
-
-    public <T extends FXView> T findView(Class<T> view) {
-        return viewManager.getView(view);
-    }
-
-    public <T extends FXProperties> T findProperties(Class<T> config) {
-        return configManager.getOverrideableProperties(config);
-    }
-
-    protected void setManagers(ViewManager viewManager, ConfigManager configManager) {
-        this.viewManager = viewManager;
-        this.configManager = configManager;
     }
 
     public FXMLLoader getLoader() {

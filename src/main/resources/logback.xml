@@ -9,7 +9,7 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- 对日志进行格式化 -->
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%-12thread] %highlight(%-5level) %boldGreen(%class{36}) -%msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread{15}] %highlight(%level{5}) %boldGreen(%class{36}) -%msg%n</pattern>
         </encoder>
     </appender>
     <!-- ERROR级别日志 -->
@@ -29,7 +29,7 @@
             <totalSizeCap>400MB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %class{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread{15}] %level{5} %class{36} -  %msg%n</pattern>
         </encoder>
     </appender>
 

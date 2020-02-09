@@ -4,7 +4,7 @@ import javafx.scene.Node;
 import org.swdc.fx.anno.Properties;
 
 @Properties(value = "config.properties", prefix = "app")
-public class DefaultUIConfigProp implements FXProperties {
+public class DefaultUIConfigProp extends FXProperties {
 
     private String theme;
 

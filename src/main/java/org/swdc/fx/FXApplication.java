@@ -8,50 +8,45 @@ import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.SFXApplication;
 import org.swdc.fx.properties.ConfigManager;
 import org.swdc.fx.properties.DefaultUIConfigProp;
+import org.swdc.fx.util.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
 
 public abstract class FXApplication extends Application {
 
-    private ViewManager viewManager;
-
-    private ConfigManager configManager;
+    private ApplicationContainer containers = new ApplicationContainer();
 
     private FXSplash splash;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public void init() throws Exception{
+        String banner = Util.readStreamAsString(FXApplication.class.getModule().getResourceAsStream("banner.txt"));
+        System.out.println(banner);
+        logger.info(" Application initializing..");
 
-        logger.info("Application initializing..");
-
-        configManager = new ConfigManager();
-        viewManager = new ViewManager(configManager);
-
+        ConfigManager configManager = containers.getComponent(ConfigManager.class);
         SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
-
         configManager.setAssetsPath(application.assetsPath());
 
-        logger.info("on launch..");
-
+        logger.info(" on launch..");
         this.onLaunch(configManager);
-
         DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
 
         if (prop == null) {
-            logger.error("can not load configuration file, application will stop");
+            logger.error(" can not load configuration file, application will stop");
             throw new RuntimeException("配置读取失败。");
         }
 
         splash = application.splash().getConstructor().newInstance();
-        logger.info("loading splash");
+        logger.info(" loading splash");
         File splashFile = new File(configManager.getAssetsPath() + "/image/splash.png");
         if (!splashFile.exists()) {
             splashFile = new File(configManager.getAssetsPath() + "/image/splash.jpg");
         }
         if (!splashFile.exists()) {
-            logger.warn("splash image not found.");
+            logger.warn(" splash image not found.");
             splash = null;
         }
         if (splash != null) {
@@ -68,13 +63,19 @@ public abstract class FXApplication extends Application {
         if (splash != null) {
             splash.getStage().show();
         }
-        logger.info("on start");
+        registerManagerContainers();
+        logger.info(" on start");
         this.onStart();
+        ViewManager viewManager = containers.getComponent(ViewManager.class);
         splash.getStage().close();
         SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
-        FXView view = viewManager.getView(application.mainView());
+        FXView view = viewManager.getComponent(application.mainView());
         logger.info("application started.");
         view.show();
+    }
+
+    protected void registerManagerContainers() {
+        containers.register(ViewManager.class);
     }
 
     protected abstract void onLaunch(ConfigManager configManager);

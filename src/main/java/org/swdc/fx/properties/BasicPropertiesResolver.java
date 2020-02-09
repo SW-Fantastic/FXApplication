@@ -51,6 +51,9 @@ public class BasicPropertiesResolver implements PropertiesResolver {
                     if (targetClazz == Object.class) {
                         break;
                     }
+                    if (targetClazz == FXProperties.class) {
+                        break;
+                    }
                 }
             }
             return instance;
