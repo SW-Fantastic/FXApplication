@@ -5,11 +5,13 @@ import org.swdc.fx.anno.Properties;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ConfigManager extends Container<FXProperties> {
 
-    private HashMap<Class, Object> configurations = new HashMap<>();
+    private HashMap<Class, FXProperties> configurations = new HashMap<>();
 
     private HashMap<Class, PropertiesResolver> resolvers = new HashMap<>();
 
@@ -72,10 +74,15 @@ public class ConfigManager extends Container<FXProperties> {
                     resolver = properties.resolve().getConstructor(ConfigManager.class).newInstance(this);
                     resolvers.put(properties.resolve(),resolver);
                 }
-                Object prop = resolver.load(clazz);
+                FXProperties prop = resolver.load(clazz);
+
+                this.activeExtras(prop);
+
+                prop.initialize();
+
                 if (scope == null || scope.value() == ScopeType.SINGLE) {
                     configurations.put(clazz, prop);
-                    logger.info("properties loaded: " + prop.getClass());
+                    logger.info("properties loaded: " + prop.getClass().getSimpleName());
                 }
                 return (R)prop;
             } catch (Exception ex) {
@@ -83,5 +90,10 @@ public class ConfigManager extends Container<FXProperties> {
                 return null;
             }
         }
+    }
+
+    @Override
+    public List<FXProperties> listComponents() {
+        return new ArrayList<>(configurations.values());
     }
 }

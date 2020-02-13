@@ -10,6 +10,17 @@ import org.swdc.fx.anno.View;
 
 import java.io.InputStream;
 
+/**
+ * 描述一个view的类。
+ * 请继承他以添加View或者窗口。
+ *
+ * 本类需要一个View注解，请在他的子类中标注。
+ * 如果没有在view注解中指定value，那么将会在 resources/views中查找
+ * 和类名相同的fxml文件，因此需要在module-info中让view对本框架open
+ *
+ * 如果找不到FXML，将会尝试使用create方法创建view，请在此方法返回Parent。
+ *
+ */
 public class FXView extends AppComponent{
 
     private Stage stage;
@@ -20,9 +31,14 @@ public class FXView extends AppComponent{
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected boolean loadFxmlView() {
+    /**
+     * 加载FXML，以获取View
+     * 将会从View注解中value的位置读取，如果没有的话，
+     * 就会尝试使用create方法创建View。
+     * @return
+     */
+    protected final boolean loadFxmlView() {
         try {
-            stage = new Stage();
             View view = this.getClass().getAnnotation(View.class);
             FXMLLoader loader = new FXMLLoader();
             String path = view.value();
@@ -33,10 +49,13 @@ public class FXView extends AppComponent{
                 if (inputStream != null) {
                     parent = loader.load(inputStream);
                     Scene scene = new Scene(parent);
-                    stage.setScene(scene);
-                    stage.initStyle(view.stageStyle());
-                    stage.setTitle(view.title());
-                    stage.setResizable(view.resizeable());
+                    if (view.stage()) {
+                        stage = new Stage();
+                        stage.initStyle(view.stageStyle());
+                        stage.setTitle(view.title());
+                        stage.setResizable(view.resizeable());
+                        stage.setScene(scene);
+                    }
                     this.loader = loader;
                     return true;
                 }
@@ -51,23 +70,62 @@ public class FXView extends AppComponent{
         }
     }
 
-    protected void onInitialized() {
-
-    }
-
-    public void setParent(Parent parent) {
-        this.parent = parent;
-    }
-
-    protected Parent createView() {
+    /**
+     * 创建组件，如果准备使用编程实现ui，请不要创建fxml文件并重写此方法。
+     * @return
+     */
+    protected Parent create() {
         return null;
     }
 
+    /**
+     * 销毁view，一般是在Application退出的时候自动调用
+     */
+    @Override
+    public void destroy() {
+        if (this.stage != null && this.stage.isShowing()) {
+            this.stage.close();
+        }
+    }
+
+    /**
+     * ViewManager会使用此方法，尝试通过Create创建View。
+     */
+    protected final void createView() {
+        View view = this.getClass().getAnnotation(View.class);
+        this.parent = create();
+        if (view.stage()) {
+            stage = new Stage();
+            stage.initStyle(view.stageStyle());
+            stage.setTitle(view.title());
+            stage.setResizable(view.resizeable());
+            stage.setScene(new Scene(parent));
+        }
+    }
+
+    /**
+     * 获取Stage，如果在View注解中将Stage配置为false，
+     * 并且使用此方法，会出现一个异常。
+     * @return
+     */
     public Stage getStage() {
+        View view = this.getClass().getAnnotation(View.class);
+        if (!view.stage()) {
+            logger.error(" view " + getClass().getSimpleName() + " has no stage.");
+            return null;
+        }
         return stage;
     }
 
+    /**
+     * 显示此view，如果没有stage，则什么都不做。
+     */
     public void show() {
+        View view = this.getClass().getAnnotation(View.class);
+        if (!view.stage()) {
+            logger.error(" view " + getClass().getSimpleName() + " can not be show, because it does not have a stage");
+            return;
+        }
         if (stage.isShowing()) {
             stage.requestFocus();
         } else {
@@ -75,10 +133,18 @@ public class FXView extends AppComponent{
         }
     }
 
+    /**
+     * 提供获取FXMLLoader的方法
+     * @return
+     */
     public FXMLLoader getLoader() {
         return loader;
     }
 
+    /**
+     * 获取ui对象。
+     * @return
+     */
     public Parent getView() {
         return parent;
     }

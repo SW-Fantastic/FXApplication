@@ -19,6 +19,8 @@ public @interface View {
 
     String[] style() default "";
 
+    boolean stage() default true;
+
     StageStyle stageStyle() default StageStyle.DECORATED;
 
 }

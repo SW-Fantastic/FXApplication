@@ -6,7 +6,9 @@ import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ServiceManager extends Container<Object> {
 
@@ -31,6 +33,11 @@ public class ServiceManager extends Container<Object> {
                 Constructor constructorWithoutArgs = clazz.getConstructor();
                 Service service = (Service) constructorWithoutArgs.newInstance();
                 service.setContainer((ApplicationContainer) getScope());
+
+                this.activeExtras(service);
+
+                service.initialize();
+
                 if (scope == null || scope.value() == ScopeType.SINGLE) {
                     services.put(clazz,service);
                     logger.info(" service : " + clazz.getSimpleName() + " loaded");
@@ -41,6 +48,11 @@ public class ServiceManager extends Container<Object> {
                 return null;
             }
         }
+    }
+
+    @Override
+    public List<Service> listComponents() {
+        return new ArrayList<>(services.values());
     }
 
 }

@@ -7,6 +7,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * 欢迎界面，默认是一个图片。
+ * 图片从Assets的image文件夹下加载splash.png或者splash.jpg
+ * 如果不需要特别的欢迎界面，可以直接使用本类。
+ */
 public class FXSplash {
 
     private Image image;
@@ -15,6 +20,11 @@ public class FXSplash {
 
     private Stage stage;
 
+    /**
+     * 创建一个显示欢迎界面图片的窗口，
+     * 如果有的话直接返回，需要自定义界面请重写这个。
+     * @return
+     */
     public Stage getStage() {
         if (stage != null) {
             return stage;
@@ -27,10 +37,6 @@ public class FXSplash {
         Scene scene = new Scene(container);
         stage.setScene(scene);
         return stage;
-    }
-
-    public BorderPane getContainer() {
-        return container;
     }
 
     public Image getImage() {

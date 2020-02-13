@@ -4,5 +4,4 @@ import org.swdc.fx.AppComponent;
 
 public abstract class Service extends AppComponent {
 
-
 }

@@ -9,6 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Scope {
 
+    /**
+     * 组件的创建模式。
+     * @return 创建模式
+     */
     ScopeType value() default ScopeType.SINGLE;
 
 }
