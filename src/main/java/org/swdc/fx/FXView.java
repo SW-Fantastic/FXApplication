@@ -1,5 +1,6 @@
 package org.swdc.fx;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -83,9 +84,11 @@ public class FXView extends AppComponent{
      */
     @Override
     public void destroy() {
-        if (this.stage != null && this.stage.isShowing()) {
-            this.stage.close();
-        }
+        Platform.runLater(() -> {
+            if (this.stage != null && this.stage.isShowing()) {
+                this.stage.close();
+            }
+        });
     }
 
     /**
@@ -131,6 +134,11 @@ public class FXView extends AppComponent{
         } else {
             stage.showAndWait();
         }
+    }
+
+    public boolean hasStage() {
+        View view = this.getClass().getAnnotation(View.class);
+        return view.stage();
     }
 
     /**

@@ -71,6 +71,11 @@ public class ExtraManager extends Container<ExtraModule> {
     }
 
     @Override
+    public boolean isComponentOf(Class clazz) {
+        return ExtraModule.class.isAssignableFrom(clazz);
+    }
+
+    @Override
     public void destroy() {
         for (Class extraModule : extraModules.keySet()) {
             this.unRegister(extraModule);

@@ -27,6 +27,9 @@ public class ApplicationContainer extends Container<Container> {
 
     @Override
     public <R extends Container> R getComponent(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (containers.containsKey(clazz)) {
             return (R)containers.get(clazz);
         } else {
@@ -36,6 +39,9 @@ public class ApplicationContainer extends Container<Container> {
 
     @Override
     public <R extends Container> Container register(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (containers.containsKey(clazz)) {
             return containers.get(clazz);
         }
@@ -68,4 +74,8 @@ public class ApplicationContainer extends Container<Container> {
         return new ArrayList<>(containers.values());
     }
 
+    @Override
+    public boolean isComponentOf(Class clazz) {
+        return Container.class.isAssignableFrom(clazz);
+    }
 }

@@ -8,4 +8,5 @@ public abstract class ExtraModule<R> extends Container<R> implements Extra<R> {
     public void setScope(Container<Container> scope) {
         super.setScope(scope);
     }
+
 }

@@ -62,6 +62,8 @@ public abstract class Container<T> implements LifeCircle {
      */
     public abstract <R extends T> List<R> listComponents();
 
+    public abstract boolean isComponentOf(Class clazz);
+
     /**
      * 注册拓展模块。
      * 如果拓展模块适用于本容器，他会被放入map。

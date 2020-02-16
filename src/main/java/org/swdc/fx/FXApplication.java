@@ -17,8 +17,7 @@ import org.swdc.fx.util.Util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -34,19 +33,31 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class FXApplication extends Application {
 
+    private static Boolean startUpShutdownLock = false;
+
     private ApplicationContainer containers;
 
     private FXSplash splash;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private Runnable shutdownHook = null;
+
     /**
      * 在JavaFX启动的时候调用，这里开始初始化容器和模块，引导整个APP
      * 的启动。
      * @throws Exception
      */
-    public void init() throws Exception{
-        InputStream bannerInput = this.getClass().getModule().getResourceAsStream("/banner.txt");
+    public void init() throws Exception {
+        while (startUpShutdownLock) {
+            Thread.currentThread().wait();
+        }
+        startUpShutdownLock = true;
+        if (shutdownHook == null) {
+            shutdownHook = this::stopAndDestroy;
+            Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+        }
+        InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
         if (bannerInput == null) {
             bannerInput = FXApplication.class.getModule().getResourceAsStream("banner.txt");
         }
@@ -107,6 +118,7 @@ public abstract class FXApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         if (splash != null) {
+            splash.getStage().getIcons().addAll(this.loadIcons());
             splash.getStage().show();
         }
         CompletableFuture.runAsync(() -> {
@@ -117,12 +129,14 @@ public abstract class FXApplication extends Application {
         }).whenCompleteAsync((v,e) -> {
             if (e != null) {
                 logger.error("exception when loading application:",e);
+                return;
             }
             Platform.runLater(() -> {
                 ViewManager viewManager = containers.getComponent(ViewManager.class);
                 SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
                 FXView view = viewManager.getComponent(application.mainView());
                 logger.info("application started.");
+                startUpShutdownLock = false;
                 if (splash != null) {
                     splash.getStage().close();
                 }
@@ -137,6 +151,8 @@ public abstract class FXApplication extends Application {
     public void stopAndDestroy() {
         logger.info("application is stopping...");
         containers.destroy();
+        startUpShutdownLock = false;
+        logger.info("application has stopped.");
     }
 
     /**
@@ -152,7 +168,6 @@ public abstract class FXApplication extends Application {
                 logger.error("error when restart application: ", ex);
             }
         });
-
     }
 
     /**
@@ -161,8 +176,11 @@ public abstract class FXApplication extends Application {
      */
     @Override
     public void stop() throws Exception {
+        while (startUpShutdownLock) {
+            Thread.currentThread().wait();
+        }
+        startUpShutdownLock = true;
         this.stopAndDestroy();
-        logger.info("application has stopped.");
     }
 
     /**
@@ -219,6 +237,23 @@ public abstract class FXApplication extends Application {
      */
     protected void onStart(){
 
+    }
+
+    protected List<Image> loadIcons() {
+        try {
+
+            Module module = FXApplication.class.getModule();
+
+            ArrayList<Image> icons = new ArrayList<>();
+            icons.add(new Image(module.getResourceAsStream("icons/iconx16.png")));
+            icons.add(new Image(module.getResourceAsStream("icons/iconx24.png")));
+            icons.add(new Image(module.getResourceAsStream("icons/iconx32.png")));
+            icons.add(new Image(module.getResourceAsStream("icons/iconx48.png")));
+            icons.add(new Image(module.getResourceAsStream("icons/iconx64.png")));
+            return icons;
+        } catch (Exception ex) {
+            return Collections.emptyList();
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package org.swdc.fx.properties;
 
+import org.swdc.fx.AppComponent;
 import org.swdc.fx.Container;
+import org.swdc.fx.FXApplication;
 import org.swdc.fx.anno.Properties;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
@@ -54,6 +56,9 @@ public class ConfigManager extends Container<FXProperties> {
 
     @Override
     public <R extends FXProperties> R getComponent(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (configurations.containsKey(clazz)) {
             return (R)configurations.get(clazz);
         } else {
@@ -63,6 +68,9 @@ public class ConfigManager extends Container<FXProperties> {
 
     @Override
     public <R extends FXProperties> FXProperties register(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (configurations.containsKey(clazz)) {
             throw new RuntimeException("配置已经存在 ：" + clazz);
         } else {
@@ -77,6 +85,10 @@ public class ConfigManager extends Container<FXProperties> {
                 FXProperties prop = resolver.load(clazz);
 
                 this.activeExtras(prop);
+
+                if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
+                    AppComponent.awareComponents(prop);
+                }
 
                 prop.initialize();
 
@@ -95,5 +107,10 @@ public class ConfigManager extends Container<FXProperties> {
     @Override
     public List<FXProperties> listComponents() {
         return new ArrayList<>(configurations.values());
+    }
+
+    @Override
+    public boolean isComponentOf(Class clazz) {
+        return FXProperties.class.isAssignableFrom(clazz);
     }
 }

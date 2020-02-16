@@ -1,7 +1,9 @@
 package org.swdc.fx.services;
 
+import org.swdc.fx.AppComponent;
 import org.swdc.fx.ApplicationContainer;
 import org.swdc.fx.Container;
+import org.swdc.fx.FXApplication;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
 
@@ -10,12 +12,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ServiceManager extends Container<Object> {
+public class ServiceManager extends Container<Service> {
 
     private HashMap<Class, Service> services = new HashMap<>();
 
     @Override
-    public <R> R getComponent(Class<R> clazz) {
+    public <R extends Service> R getComponent(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (services.containsKey(clazz)) {
             return (R)services.get(clazz);
         } else {
@@ -24,7 +29,10 @@ public class ServiceManager extends Container<Object> {
     }
 
     @Override
-    public <R> Object register(Class<R> clazz) {
+    public <R extends Service> R register(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         if (services.containsKey(clazz)) {
             return (R) services.get(clazz);
         } else {
@@ -36,15 +44,18 @@ public class ServiceManager extends Container<Object> {
 
                 this.activeExtras(service);
 
+                if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
+                    AppComponent.awareComponents(service);
+                }
                 service.initialize();
 
                 if (scope == null || scope.value() == ScopeType.SINGLE) {
                     services.put(clazz,service);
                     logger.info(" service : " + clazz.getSimpleName() + " loaded");
                 }
-                return service;
+                return (R) service;
             } catch (Exception ex) {
-                logger.error("can not load service " + clazz.getSimpleName());
+                logger.error("can not load service " + clazz.getSimpleName(), ex);
                 return null;
             }
         }
@@ -55,4 +66,8 @@ public class ServiceManager extends Container<Object> {
         return new ArrayList<>(services.values());
     }
 
+    @Override
+    public boolean isComponentOf(Class clazz) {
+        return Service.class.isAssignableFrom(clazz);
+    }
 }

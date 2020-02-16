@@ -1,6 +1,7 @@
 package org.swdc.fx;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.image.Image;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
 import org.swdc.fx.properties.ConfigManager;
@@ -21,6 +22,14 @@ public class ViewManager extends Container<FXView> {
 
     private FXTheme theme = null;
 
+    private List<Image> icons = new ArrayList<>();
+
+    @Override
+    public void initialize() {
+        FXApplication application = ((ApplicationContainer)getScope()).getApplication();
+        icons = application.loadIcons();
+    }
+
     /**
      * 获取一个view，没有的话就创建一个。
      * @param clazz view的class
@@ -33,6 +42,9 @@ public class ViewManager extends Container<FXView> {
             ConfigManager configManager = getScope().getComponent(ConfigManager.class);
             DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
             theme = new FXTheme(prop.getTheme(), configManager.getAssetsPath());
+        }
+        if (!isComponentOf(clazz)) {
+            return null;
         }
         if (views.containsKey(clazz)) {
             return (R)views.get(clazz);
@@ -52,6 +64,9 @@ public class ViewManager extends Container<FXView> {
      */
     @Override
     public <R extends FXView> FXView register(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
         Scope scope = clazz.getAnnotation(Scope.class);
 
         if (views.containsKey(clazz)) {
@@ -73,15 +88,27 @@ public class ViewManager extends Container<FXView> {
                         Object controller = loader.getController();
                         if (controller != null && controller instanceof FXController) {
                             FXController fxController = (FXController) controller;
+                            Class ctrlClazz = fxController.getClass();
                             fxController.setContainer((ApplicationContainer) this.getScope());
+                            if (ctrlClazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
+                                AppComponent.awareComponents(fxController);
+                            }
                         }
                     }
                 }
 
+                if (view.hasStage()) {
+                    view.getStage().getIcons().addAll(this.icons);
+                }
+
                 this.activeExtras(view);
 
-                view.initialize();
+                if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
+                    AppComponent.awareComponents(view);
+                }
                 theme.initView(view);
+
+                view.initialize();
                 if (scope == null || scope.value() == ScopeType.SINGLE) {
                     views.put(clazz,view);
                     logger.info(" view loaded :" + view.getClass().getSimpleName());
@@ -103,4 +130,9 @@ public class ViewManager extends Container<FXView> {
         return new ArrayList<>(views.values());
     }
 
+
+    @Override
+    public boolean isComponentOf(Class clazz) {
+        return FXView.class.isAssignableFrom(clazz);
+    }
 }
