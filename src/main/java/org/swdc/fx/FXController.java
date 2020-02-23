@@ -10,5 +10,13 @@ import javafx.fxml.Initializable;
  */
 public abstract class FXController extends AppComponent implements Initializable {
 
+    private FXView view;
 
+    public void setView(FXView view) {
+        this.view = view;
+    }
+
+    public FXView getView() {
+        return view;
+    }
 }

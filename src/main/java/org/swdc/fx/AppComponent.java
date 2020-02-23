@@ -45,6 +45,11 @@ public class AppComponent implements LifeCircle {
                 .getComponent(service);
     }
 
+    protected final FXTheme findTheme() {
+        ViewManager viewManager = container.getComponent(ViewManager.class);
+        return viewManager.getTheme();
+    }
+
     public <T> T findExtraComponent(Class<? extends ExtraModule> extra, Class<T> compClazz) {
         ExtraManager manager = container.getComponent(ExtraManager.class);
         ExtraModule module = manager.getComponent(extra);

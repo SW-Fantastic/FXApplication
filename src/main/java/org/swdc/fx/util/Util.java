@@ -1,5 +1,10 @@
 package org.swdc.fx.util;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Stage;
+import org.swdc.fx.FXTheme;
+
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -49,6 +54,20 @@ public class Util {
             target = target.getSuperclass();
         }
         return fields;
+    }
+
+    public static Optional<ButtonType> showAlertDialog(Stage owner, String content, String title, Alert.AlertType type, FXTheme theme) {
+        Alert alert = new Alert(type);
+        alert.setHeaderText(null);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.initOwner(owner);
+        try {
+            theme.initFXView(alert.getDialogPane());
+            return alert.showAndWait();
+        }catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

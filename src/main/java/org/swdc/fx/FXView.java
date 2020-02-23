@@ -4,12 +4,16 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
+import org.swdc.fx.util.Util;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * 描述一个view的类。
@@ -155,5 +159,13 @@ public class FXView extends AppComponent{
      */
     public Parent getView() {
         return parent;
+    }
+
+    public Optional<ButtonType> showAlertDialog(String title, String content, Alert.AlertType type) {
+        if (this.hasStage()) {
+            return Util.showAlertDialog(this.getStage(),content,title,type,this.findTheme());
+        } else {
+            return Util.showAlertDialog(null,content,title,type,this.findTheme());
+        }
     }
 }

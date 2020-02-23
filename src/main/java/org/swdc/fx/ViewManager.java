@@ -93,6 +93,7 @@ public class ViewManager extends Container<FXView> {
                             if (ctrlClazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
                                 AppComponent.awareComponents(fxController);
                             }
+                            fxController.setView(view);
                         }
                     }
                 }
@@ -119,6 +120,10 @@ public class ViewManager extends Container<FXView> {
                 return null;
             }
         }
+    }
+
+    public FXTheme getTheme() {
+        return theme;
     }
 
     /**

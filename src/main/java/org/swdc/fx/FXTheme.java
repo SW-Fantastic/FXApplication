@@ -1,5 +1,6 @@
 package org.swdc.fx;
 
+import javafx.scene.Node;
 import org.swdc.fx.anno.View;
 
 import java.io.File;
@@ -57,6 +58,16 @@ public class FXTheme {
                         .getStylesheets()
                         .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
             }
+        }
+    }
+
+    public void initFXView(Node node) {
+        try {
+            node.getScene()
+                    .getStylesheets()
+                    .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
+        } catch (Exception e) {
+
         }
     }
 
