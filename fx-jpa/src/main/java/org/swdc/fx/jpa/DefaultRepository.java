@@ -3,6 +3,7 @@ package org.swdc.fx.jpa;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.LifeCircle;
+import org.swdc.fx.jpa.anno.Modify;
 import org.swdc.fx.jpa.anno.Param;
 import org.swdc.fx.jpa.anno.SQLQuery;
 
@@ -52,26 +53,49 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         } catch (Exception ex) {
 
         }
-        Query query = resolveByQuery(manager, method);
+        Query query = resolveByQuery(manager, method, args);
+        Modify modify = method.getAnnotation(Modify.class);
         if (query != null) {
-            Class returnClazz = method.getReturnType();
-            if (Set.class.isAssignableFrom(returnClazz)) {
-                return query.getResultStream().collect(Collectors.toSet());
-            } else if (List.class.isAssignableFrom(returnClazz)) {
-                return query.getResultStream().collect(Collectors.toList());
-            } else if (Collection.class.isAssignableFrom(returnClazz)) {
-                return query.getResultStream().collect(Collectors.toList());
-            } else if (returnClazz == eClass) {
-                return query.getResultList().get(query.getFirstResult());
-            } else if (returnClazz == Integer.class || returnClazz == Long.class) {
-                return BigDecimal.class.cast(query.getSingleResult()).intValue();
+            // 是一个修改的query，需要事务
+            if (modify != null) {
+                manager.getTransaction().begin();
             }
-            return null;
+            try {
+                Class returnClazz = method.getReturnType();
+                if (Set.class.isAssignableFrom(returnClazz)) {
+                    return query.getResultStream().collect(Collectors.toSet());
+                } else if (List.class.isAssignableFrom(returnClazz)) {
+                    return query.getResultStream().collect(Collectors.toList());
+                } else if (Collection.class.isAssignableFrom(returnClazz)) {
+                    return query.getResultStream().collect(Collectors.toList());
+                } else if (returnClazz == eClass) {
+                    return query.getResultList().get(query.getFirstResult());
+                } else if (returnClazz == Integer.class || returnClazz == Long.class) {
+                    return modify == null ?
+                            // 没有modify，普通查询
+                            BigDecimal.class.cast(query.getSingleResult()).intValue():
+                            // 有modify，进行update
+                            query.executeUpdate();
+                }
+                return null;
+            } catch (Exception ex) {
+                // 回滚事务
+                if (modify != null) {
+                    manager.getTransaction().rollback();
+                }
+                logger.error("fail to execute query: " + method.getName(), ex);
+            } finally {
+                // 提交事务
+                if (modify != null) {
+                    manager.getTransaction().commit();
+                }
+            }
+
         }
         return null;
     }
 
-    public Query resolveByQuery(EntityManager em, Method method) {
+    public Query resolveByQuery(EntityManager em, Method method, Object[] args) {
         SQLQuery sqlQuery = method.getAnnotation(SQLQuery.class);
         Query query = em.createQuery(sqlQuery.value(),eClass);
         Parameter[] params = method.getParameters();
@@ -80,10 +104,10 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             logger.error("method: " + method.getName());
             return null;
         }
-        for (Parameter param: params) {
-            Param qParam = param.getAnnotation(Param.class);
+        for (int index = 0; index <params.length; index ++) {
+            Param qParam = params[index].getAnnotation(Param.class);
             String name = qParam.value();
-            query.setParameter(name,param);
+            query.setParameter(name,args[index]);
         }
         return query;
     }

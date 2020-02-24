@@ -28,6 +28,9 @@ public class ViewManager extends Container<FXView> {
     public void initialize() {
         FXApplication application = ((ApplicationContainer)getScope()).getApplication();
         icons = application.loadIcons();
+        ConfigManager configManager = getScope().getComponent(ConfigManager.class);
+        DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
+        theme = new FXTheme(prop.getTheme(), configManager.getAssetsPath());
     }
 
     /**
@@ -38,11 +41,6 @@ public class ViewManager extends Container<FXView> {
      */
     @Override
     public <R extends FXView> R getComponent(Class<R> clazz) {
-        if (theme == null) {
-            ConfigManager configManager = getScope().getComponent(ConfigManager.class);
-            DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
-            theme = new FXTheme(prop.getTheme(), configManager.getAssetsPath());
-        }
         if (!isComponentOf(clazz)) {
             return null;
         }

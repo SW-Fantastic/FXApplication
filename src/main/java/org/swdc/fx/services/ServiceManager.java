@@ -42,11 +42,12 @@ public class ServiceManager extends Container<Service> {
                 Service service = (Service) constructorWithoutArgs.newInstance();
                 service.setContainer((ApplicationContainer) getScope());
 
-                this.activeExtras(service);
-
                 if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
                     AppComponent.awareComponents(service);
                 }
+
+                this.activeExtras(service);
+
                 service.initialize();
 
                 if (scope == null || scope.value() == ScopeType.SINGLE) {

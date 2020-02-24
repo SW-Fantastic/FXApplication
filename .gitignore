@@ -6,3 +6,7 @@ fx.iml
 fx-jpa/fx-jpa.iml
 fx-jpa/target
 fx-jpa/.idea
+
+fx-resource/fx-resource.iml;
+fx-resource/target
+fx-resource/.idea
