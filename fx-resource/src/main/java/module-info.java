@@ -6,5 +6,6 @@ module fx.framework.resource {
 
    exports org.swdc.fx.resource;
    exports org.swdc.fx.resource.icons;
+   exports org.swdc.fx.resource.source;
 
 }

@@ -7,25 +7,61 @@ import org.swdc.fx.extra.ExtraModule;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * 搜寻和加载字体，图标字体，以及搜寻各类资源
  */
-public class ResourceModule extends ExtraModule<AppComponent> {
+public class ResourceModule extends ExtraModule {
+
+    private SFXApplication applicationDesc;
+
+    private HashMap<Class, Object> instanceMap = new HashMap<>();
+
     @Override
-    public <R extends AppComponent> R getComponent(Class<R> clazz) {
-        return null;
+    public Object getComponent(Class clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
+        if (instanceMap.containsKey(clazz)) {
+            return instanceMap.get(clazz);
+        } else {
+            return register(clazz);
+        }
     }
 
     @Override
-    public <R extends AppComponent> IconFontService register(Class<R> clazz) {
-        return null;
+    public Object register(Class clazz) {
+        if (ResourceService.class.isAssignableFrom(clazz)) {
+            try {
+                Object rs = clazz.getConstructor().newInstance();
+                ResourceService service = ResourceService.class.cast(rs);
+                service.setAssetsPath(applicationDesc.assetsPath());
+                service.initialize();
+                instanceMap.put(clazz, service);
+                return service;
+            } catch (Exception ex) {
+                logger.error("fail instance resource service", ex);
+                return null;
+            }
+        } else {
+            try {
+                IconFontService iconFontService = (IconFontService) clazz.getConstructor().newInstance();
+                iconFontService.initialize();
+                instanceMap.put(clazz, iconFontService);
+                return iconFontService;
+            } catch (Exception ex) {
+                logger.error("fail to instance icon service: ", ex);
+                return null;
+            }
+        }
     }
 
     @Override
-    public <R extends AppComponent> List<R> listComponents() {
-        return null;
+    public List<Object> listComponents() {
+        return new ArrayList<>(instanceMap.values());
     }
 
     @Override
@@ -36,14 +72,13 @@ public class ResourceModule extends ExtraModule<AppComponent> {
 
     @Override
     public boolean initialize(ApplicationContainer container) {
+        Object app = container.getApplication();
+        applicationDesc = app.getClass().getAnnotation(SFXApplication.class);
         resolveFonts(container);
         return true;
     }
 
     private void resolveFonts(ApplicationContainer container) {
-        Object app = container.getApplication();
-        SFXApplication applicationDesc = app.getClass().getAnnotation(SFXApplication.class);
-
         ViewManager viewManager = container.getComponent(ViewManager.class);
         FXTheme theme = viewManager.getTheme();
         String environment = applicationDesc.assetsPath() + File.separator + "theme" + File.separator + theme.getName();
@@ -82,21 +117,25 @@ public class ResourceModule extends ExtraModule<AppComponent> {
 
     @Override
     public boolean destroy(ApplicationContainer container) {
+        for (Object obj: instanceMap.values()) {
+            LifeCircle lifeCircle = (LifeCircle) obj;
+            lifeCircle.destroy();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean support(Class container) {
         return false;
     }
 
     @Override
-    public <T extends Container> boolean support(Class<T> container) {
-        return false;
-    }
-
-    @Override
-    public void activeOnComponent(AppComponent comp) {
+    public void activeOnComponent(Object comp) {
 
     }
 
     @Override
-    public void disposeOnComponent(AppComponent comp) {
+    public void disposeOnComponent(Object comp) {
 
     }
 }

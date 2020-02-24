@@ -1,6 +1,8 @@
 package org.swdc.fx.resource.icons;
 
 import javafx.scene.text.Font;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swdc.fx.resource.IconFontService;
 import org.swdc.fx.resource.ResourceModule;
 
@@ -13,8 +15,10 @@ public class FontawsomeService extends IconFontService {
     private Map<FontSize, Font> fonts = new HashMap<>();
     private static final String location = "fonts/fontawesome.ttf";
 
+    private Logger logger = LoggerFactory.getLogger(FontawsomeService.class);
+
     @Override
-    public void loadFontIcon() {
+    public void initialize() {
         try {
             Module module = ResourceModule.class.getModule();
             fonts.put(FontSize.LARGE, Font.loadFont(module.getResourceAsStream(location),64));
