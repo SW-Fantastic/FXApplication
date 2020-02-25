@@ -4,10 +4,14 @@ import javafx.scene.text.Font;
 import org.swdc.fx.LifeCircle;
 import org.swdc.fx.resource.icons.FontSize;
 
-public abstract class IconFontService implements LifeCircle {
+import java.util.Set;
 
-    public abstract String getFontIcon(String name);
+public interface IconFontService extends LifeCircle {
 
-    public abstract Font getFont(FontSize size);
+    String getFontIcon(String name);
+
+    Font getFont(FontSize size);
+
+    Set<String> getIconNames();
 
 }

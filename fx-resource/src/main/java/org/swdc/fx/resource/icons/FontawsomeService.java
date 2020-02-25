@@ -8,8 +8,9 @@ import org.swdc.fx.resource.ResourceModule;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class FontawsomeService extends IconFontService {
+public class FontawsomeService implements IconFontService {
 
     private Map<String, Character> awesomeMap = new HashMap<>();
     private Map<FontSize, Font> fonts = new HashMap<>();
@@ -726,6 +727,11 @@ public class FontawsomeService extends IconFontService {
             logger.error("fail to load font-icon font-awesome",ex);
         }
 
+    }
+
+    @Override
+    public Set<String> getIconNames() {
+        return awesomeMap.keySet();
     }
 
     @Override
