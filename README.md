@@ -28,6 +28,9 @@
 资源支持，统一的资源接口，支持从classPath，File，ModulePath
 压缩文件直接提取数据。
 
+对了，这个拓展会自动加载字体，以及当前theme的字体，内签了
+Fontawesome和MaterialIcons两套字体图标。
+
 ## 测试
 没写，没时间，以后加。
 

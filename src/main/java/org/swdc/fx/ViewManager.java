@@ -92,6 +92,7 @@ public class ViewManager extends Container<FXView> {
                                 AppComponent.awareComponents(fxController);
                             }
                             fxController.setView(view);
+                            fxController.initialize();
                         }
                     }
                 }
@@ -133,6 +134,20 @@ public class ViewManager extends Container<FXView> {
         return new ArrayList<>(views.values());
     }
 
+
+    @Override
+    public void destroy() {
+        for (FXView view : this.views.values()) {
+            if (view.getLoader() != null) {
+                Object controller = view.getLoader().getController();
+                if (controller instanceof FXController) {
+                    FXController fxController = (FXController)controller;
+                    fxController.destroy();
+                }
+            }
+            view.destroy();
+        }
+    }
 
     @Override
     public boolean isComponentOf(Class clazz) {

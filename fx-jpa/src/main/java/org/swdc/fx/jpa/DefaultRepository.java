@@ -202,7 +202,9 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
     @Override
     public void destroy() {
         for (EntityManager em: entityManagerList){
-            em.getTransaction().commit();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().commit();
+            }
             em.close();
         }
     }

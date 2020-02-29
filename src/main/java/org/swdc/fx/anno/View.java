@@ -23,4 +23,8 @@ public @interface View {
 
     StageStyle stageStyle() default StageStyle.DECORATED;
 
+    boolean background() default false;
+
+    boolean dialog() default false;
+
 }

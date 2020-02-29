@@ -36,28 +36,42 @@ public class FXTheme {
     public void initView(FXView view) throws Exception {
         View viewProp = view.getClass().getAnnotation(View.class);
         if (viewProp.style().length == 1 && viewProp.style()[0].equals("")) {
-            view.getStage()
-                    .getScene()
-                    .getStylesheets()
-                    .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
-            File background = new File(this.assetsPath + "/theme/" + this.name + "/background.jpg");
-            if (!background.exists()) {
-                background = new File(this.assetsPath + "/theme/" + this.name + "/background.png");
-            }
-            if (background.exists()) {
+            if(viewProp.stage()) {
                 view.getStage()
                         .getScene()
-                        .getRoot()
-                        .setStyle("-fx-background-image: url(" + background.toURI().toURL().toExternalForm() + ");");
+                        .getStylesheets()
+                        .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
+                File background = new File(this.assetsPath + "/theme/" + this.name + "/background.jpg");
+                if (!background.exists()) {
+                    background = new File(this.assetsPath + "/theme/" + this.name + "/background.png");
+                }
+                if (background.exists() && viewProp.background()) {
+                    view.getStage()
+                            .getScene()
+                            .getRoot()
+                            .setStyle("-fx-background-image: url(" + background.toURI().toURL().toExternalForm() + ");");
+                }
+            } else {
+                view.getView()
+                        .getStylesheets()
+                        .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
             }
         } else {
             String[] themes = viewProp.style();
             for (String style: themes) {
-                view.getStage()
-                        .getScene()
-                        .getStylesheets()
-                        .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
+                if (viewProp.stage()) {
+                    view.getStage()
+                            .getScene()
+                            .getStylesheets()
+                            .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
+                } else {
+                    view.getView()
+                            .getStylesheets()
+                            .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
+                }
+
             }
+
         }
     }
 

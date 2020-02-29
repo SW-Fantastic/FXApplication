@@ -2,10 +2,16 @@ package org.swdc.fx;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +19,7 @@ import org.swdc.fx.anno.View;
 import org.swdc.fx.util.Util;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -53,13 +60,16 @@ public class FXView extends AppComponent{
             try(InputStream inputStream = this.getClass().getModule().getResourceAsStream(path)){
                 if (inputStream != null) {
                     parent = loader.load(inputStream);
-                    Scene scene = new Scene(parent);
                     if (view.stage()) {
+                        Scene scene = new Scene(parent);
                         stage = new Stage();
                         stage.initStyle(view.stageStyle());
                         stage.setTitle(view.title());
                         stage.setResizable(view.resizeable());
                         stage.setScene(scene);
+                        if (view.dialog()) {
+                            stage.initModality(Modality.APPLICATION_MODAL);
+                        }
                     }
                     this.loader = loader;
                     return true;
@@ -107,6 +117,9 @@ public class FXView extends AppComponent{
             stage.setTitle(view.title());
             stage.setResizable(view.resizeable());
             stage.setScene(new Scene(parent));
+            if (view.dialog()) {
+                stage.initModality(Modality.APPLICATION_MODAL);
+            }
         }
     }
 
@@ -136,9 +149,25 @@ public class FXView extends AppComponent{
         if (stage.isShowing()) {
             stage.requestFocus();
         } else {
-            stage.showAndWait();
+            if (view.dialog()) {
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
         }
     }
+
+    public void close() {
+        View view = this.getClass().getAnnotation(View.class);
+        if (!view.stage()) {
+            logger.error(" view " + getClass().getSimpleName() + " can not be show, because it does not have a stage");
+            return;
+        }
+        if (stage.isShowing()) {
+            stage.close();
+        }
+    }
+
 
     public boolean hasStage() {
         View view = this.getClass().getAnnotation(View.class);
@@ -159,6 +188,52 @@ public class FXView extends AppComponent{
      */
     public Parent getView() {
         return parent;
+    }
+
+    public <T> T findById(String id) {
+        T look = (T)parent.lookup("#" + id);
+        if (look != null) {
+            return look;
+        }
+        List<Node> childs = parent.getChildrenUnmodifiable();
+        for (Node node : childs){
+            if (id.equals(node.getId())) {
+                return (T)node;
+            } else {
+                T target = findById(id,node);
+                if (target != null) {
+                    return target;
+                }
+            }
+        }
+        return null;
+    }
+
+    private <T> T findById(String id, Node parent) {
+        if (parent instanceof ToolBar) {
+            ToolBar toolBar = (ToolBar) parent;
+            List<Node> tools = toolBar.getItems();
+            for (Node item: tools) {
+                if (id.equals(item.getId())) {
+                    return (T)item;
+                }
+            }
+            return null;
+        } else if (parent instanceof Pane) {
+            Pane pane = (Pane)parent;
+            for (Node node: pane.getChildren()) {
+                if (id.equals(node.getId())) {
+                    return (T)node;
+                } else {
+                    Node next = findById(id, node);
+                    if (next != null) {
+                        return (T)next;
+                    }
+                }
+            }
+            return null;
+        }
+        return null;
     }
 
     public Optional<ButtonType> showAlertDialog(String title, String content, Alert.AlertType type) {
