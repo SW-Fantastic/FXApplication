@@ -13,8 +13,6 @@ import java.util.List;
  */
 public class ApplicationContainer extends Container<Container> {
 
-    private HashMap<Class<? extends Container>, Container> containers = new HashMap<>();
-
     private FXApplication application;
 
     public ApplicationContainer(FXApplication application) {
@@ -26,28 +24,9 @@ public class ApplicationContainer extends Container<Container> {
     }
 
     @Override
-    public <R extends Container> R getComponent(Class<R> clazz) {
-        if (!isComponentOf(clazz)) {
-            return null;
-        }
-        if (containers.containsKey(clazz)) {
-            return (R)containers.get(clazz);
-        } else {
-            return (R)register(clazz);
-        }
-    }
-
-    @Override
-    public <R extends Container> Container register(Class<R> clazz) {
-        if (!isComponentOf(clazz)) {
-            return null;
-        }
-        if (containers.containsKey(clazz)) {
-            return containers.get(clazz);
-        }
+    protected Container instance(Class clazz) {
         try {
-            Container container = clazz.getConstructor().newInstance();
-            containers.put(clazz,container);
+            Container container = (Container) clazz.getConstructor().newInstance();
             container.setScope(this);
 
             if (clazz != ExtraManager.class) {
@@ -60,18 +39,11 @@ public class ApplicationContainer extends Container<Container> {
                 }
             }
 
-            container.initialize();
-
             return container;
         } catch (Exception ex) {
             logger.error("fail to construct container: " + clazz);
             return null;
         }
-    }
-
-    @Override
-    public List<Container> listComponents() {
-        return new ArrayList<>(containers.values());
     }
 
     @Override

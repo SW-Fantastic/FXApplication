@@ -78,25 +78,6 @@ public class AppComponent implements LifeCircle {
         return null;
     }
 
-    public static void awareComponents(AppComponent component) throws IllegalAccessException {
-        Class clazz = component.getClass();
-        while (clazz != null) {
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                Aware aware = field.getAnnotation(Aware.class);
-                if (aware == null) {
-                    continue;
-                }
-                Object target = component.findComponent(field.getType());
-                field.setAccessible(true);
-                field.set(component,target);
-                field.setAccessible(false);
-            }
-            clazz = clazz.getSuperclass();
-            if (clazz == AppComponent.class || clazz == Object.class) {
-                break;
-            }
-        }
-    }
+
 
 }

@@ -2,8 +2,6 @@ package org.swdc.fx.jpa;
 
 import org.swdc.fx.ApplicationContainer;
 import org.swdc.fx.Container;
-import org.swdc.fx.anno.Scope;
-import org.swdc.fx.anno.ScopeType;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.jpa.scanner.IPackageScanner;
 
@@ -23,40 +21,17 @@ public class JPAExtraModule extends ExtraModule<JPARepository> {
 
     private List<DefaultRepository> handlers = new ArrayList<>();
 
-    public <R extends JPARepository> R getComponent(Class<R> aClass) {
-        if (!isComponentOf(aClass)) {
-            return null;
-        }
-        if (repositoryMap.containsKey(aClass)) {
-            return (R) repositoryMap.get(aClass);
-        }
-        for (Class clazzItem : repositoryMap.keySet()) {
-            if (aClass.isAssignableFrom(clazzItem)) {
-                return (R)repositoryMap.get(clazzItem);
-            }
-        }
-        return (R) register(aClass);
-    }
-
-    public <R extends JPARepository> JPARepository register(Class<R> aClass) {
+    @Override
+    protected <R extends JPARepository> R instance(Class<R> target) {
         DefaultRepository repository = new DefaultRepository();
-        ParameterizedType parameterizedType = (ParameterizedType) aClass.getGenericInterfaces()[0];
+        ParameterizedType parameterizedType = (ParameterizedType) target.getGenericInterfaces()[0];
 
         Class entityClass = (Class) parameterizedType.getActualTypeArguments()[0];
 
         repository.init(this, entityClass);
-        JPARepository jpaRepository = (JPARepository) Proxy.newProxyInstance(getClass().getClassLoader(),new Class[]{aClass},repository);
-        Scope scope = aClass.getAnnotation(Scope.class);
-        if (scope == null || scope.value() == ScopeType.SINGLE) {
-            repositoryMap.put(aClass,jpaRepository);
-            logger.info("repository loaded: " + aClass.getSimpleName());
-        }
+        JPARepository jpaRepository = (JPARepository) Proxy.newProxyInstance(getClass().getClassLoader(),new Class[]{target},repository);
         handlers.add(repository);
-        return jpaRepository;
-    }
-
-    public List<JPARepository> listComponents() {
-        return new ArrayList<>(repositoryMap.values());
+        return (R)jpaRepository;
     }
 
     @Override
@@ -107,8 +82,8 @@ public class JPAExtraModule extends ExtraModule<JPARepository> {
         return false;
     }
 
-    public void activeOnComponent(JPARepository jpaRepository) {
-
+    public Object postProcess(JPARepository jpaRepository) {
+        return jpaRepository;
     }
 
     public void disposeOnComponent(JPARepository jpaRepository) {

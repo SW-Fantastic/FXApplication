@@ -7,9 +7,6 @@ import org.swdc.fx.extra.ExtraModule;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * 搜寻和加载字体，图标字体，以及搜寻各类资源
@@ -18,29 +15,13 @@ public class ResourceModule extends ExtraModule {
 
     private SFXApplication applicationDesc;
 
-    private HashMap<Class, Object> instanceMap = new HashMap<>();
-
     @Override
-    public Object getComponent(Class clazz) {
-        if (!isComponentOf(clazz)) {
-            return null;
-        }
-        if (instanceMap.containsKey(clazz)) {
-            return instanceMap.get(clazz);
-        } else {
-            return register(clazz);
-        }
-    }
-
-    @Override
-    public Object register(Class clazz) {
+    protected Object instance(Class clazz) {
         if (ResourceService.class.isAssignableFrom(clazz)) {
             try {
                 Object rs = clazz.getConstructor().newInstance();
                 ResourceService service = ResourceService.class.cast(rs);
                 service.setAssetsPath(applicationDesc.assetsPath());
-                service.initialize();
-                instanceMap.put(clazz, service);
                 return service;
             } catch (Exception ex) {
                 logger.error("fail instance resource service", ex);
@@ -50,18 +31,12 @@ public class ResourceModule extends ExtraModule {
             try {
                 IconFontService iconFontService = (IconFontService) clazz.getConstructor().newInstance();
                 iconFontService.initialize();
-                instanceMap.put(clazz, iconFontService);
                 return iconFontService;
             } catch (Exception ex) {
                 logger.error("fail to instance icon service: ", ex);
                 return null;
             }
         }
-    }
-
-    @Override
-    public List<Object> listComponents() {
-        return new ArrayList<>(instanceMap.values());
     }
 
     @Override
@@ -117,7 +92,7 @@ public class ResourceModule extends ExtraModule {
 
     @Override
     public boolean destroy(ApplicationContainer container) {
-        for (Object obj: instanceMap.values()) {
+        for (Object obj: this.listComponents()) {
             LifeCircle lifeCircle = (LifeCircle) obj;
             lifeCircle.destroy();
         }
@@ -130,8 +105,8 @@ public class ResourceModule extends ExtraModule {
     }
 
     @Override
-    public void activeOnComponent(Object comp) {
-
+    public Object postProcess(Object comp) {
+        return comp;
     }
 
     @Override
