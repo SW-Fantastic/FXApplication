@@ -51,6 +51,7 @@ public class ViewManager extends Container<FXView> {
                         }
                         fxController.setView(view);
                         fxController.initialize();
+                        this.registerEventHandler(fxController);
                     }
                 }
             }

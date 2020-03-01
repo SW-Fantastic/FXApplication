@@ -196,7 +196,15 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             logger.error("no entity manager at current thread");
             return;
         }
+        boolean tx = false;
+        if (!entityManager.getTransaction().isActive()) {
+            tx = true;
+            entityManager.getTransaction().begin();
+        }
         entityManager.remove(entry);
+        if(tx) {
+            entityManager.getTransaction().commit();
+        }
     }
 
     @Override

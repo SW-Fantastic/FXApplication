@@ -3,6 +3,7 @@ package org.swdc.fx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.Aware;
+import org.swdc.fx.event.AppEvent;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.properties.ConfigManager;
@@ -78,6 +79,8 @@ public class AppComponent implements LifeCircle {
         return null;
     }
 
-
+    public void emit(AppEvent event) {
+        this.container.emit(event);
+    }
 
 }

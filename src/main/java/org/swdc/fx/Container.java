@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.Aware;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
+import org.swdc.fx.event.AppEvent;
+import org.swdc.fx.event.EventPublisher;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
 
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
  * 容器，管理各类资源的那种。
  * @param <T>
  */
-public abstract class Container<T> implements LifeCircle {
+public abstract class Container<T> extends EventPublisher implements LifeCircle{
 
     /**
      * 父容器，一般在创建的时候会指定。
@@ -87,9 +89,12 @@ public abstract class Container<T> implements LifeCircle {
             if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
                 if (target instanceof AppComponent) {
                     AppComponent appComponent = AppComponent.class.cast(target);
-                    if (this.getScope() instanceof ApplicationContainer) {
-                        appComponent.setContainer((ApplicationContainer)this.getScope());
-                        this.awareComponents((AppComponent) target);
+                    appComponent.setContainer((ApplicationContainer)this.getScope());
+                    this.awareComponents((AppComponent) target);
+                    Scope scope = clazz.getAnnotation(Scope.class);
+                    // 只有单例对象可以监听
+                    if (scope == null || scope.value() == ScopeType.SINGLE) {
+                        registerEventHandler(appComponent);
                     }
                 }
             }
@@ -112,6 +117,32 @@ public abstract class Container<T> implements LifeCircle {
 
     protected List<Class> getRegisteredClass() {
         return new ArrayList<>(components.keySet());
+    }
+
+    @Override
+    public void registerEventHandler(AppComponent component) {
+        Container container = getScope();
+        if (container == null){
+            super.registerEventHandler(component);
+            return;
+        }
+        while (container.getScope() != null){
+            container = container.getScope();
+        }
+        container.registerEventHandler(component);
+    }
+
+    @Override
+    public <T extends AppEvent> void emit(T event) {
+        Container container = getScope();
+        if(container == null) {
+            super.emit(event);
+            return;
+        }
+        while (container.getScope() != null){
+            container = container.getScope();
+        }
+        container.emit(event);
     }
 
     /**
