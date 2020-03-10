@@ -6,6 +6,8 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 public class BasicPropertiesResolver implements PropertiesResolver {
 
@@ -39,11 +41,21 @@ public class BasicPropertiesResolver implements PropertiesResolver {
             Class targetClazz = clazz;
             while (targetClazz != null) {
                 for (Field field : clazz.getDeclaredFields()) {
+                    PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(),targetClazz);
+                    Method writer = propertyDescriptor.getWriteMethod();
+                    Parameter param = writer.getParameters()[0];
                     try {
-                        PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(),targetClazz);
-                        propertyDescriptor.getWriteMethod().invoke(instance, prop.getProperty(properties.prefix() + "." + field.getName()));
+                        if (param.getType() == String.class) {
+                            propertyDescriptor.getWriteMethod().invoke(instance, prop.getProperty(properties.prefix() + "." + field.getName()));
+                            continue;
+                        }
+                        Method covertStatic = param.getType().getMethod("valueOf", String.class);
+                        if (covertStatic != null) {
+                            Object paramObj = covertStatic.invoke(null, prop.getProperty(properties.prefix() + "." + field.getName()));
+                            propertyDescriptor.getWriteMethod().invoke(instance, paramObj);
+                        }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                       ex.printStackTrace();
                     }
                 }
                 if (targetClazz.getSuperclass() != null) {

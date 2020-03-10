@@ -35,6 +35,8 @@ public abstract class FXApplication extends Application {
 
     private static Boolean startUpShutdownLock = false;
 
+    private static boolean hasShutdown = false;
+
     private ApplicationContainer containers;
 
     private FXSplash splash;
@@ -149,10 +151,21 @@ public abstract class FXApplication extends Application {
      * 终止Application的运行
      */
     public void stopAndDestroy() {
-        logger.info("application is stopping...");
-        containers.destroy();
-        startUpShutdownLock = false;
-        logger.info("application has stopped.");
+        try {
+            if (hasShutdown) {
+                return;
+            }
+            while (startUpShutdownLock) {
+                Thread.currentThread().wait();
+            }
+            logger.info("application is stopping...");
+            containers.destroy();
+            startUpShutdownLock = false;
+            logger.info("application has stopped.");
+            hasShutdown = true;
+        } catch (Exception ex) {
+
+        }
     }
 
     /**
@@ -176,10 +189,6 @@ public abstract class FXApplication extends Application {
      */
     @Override
     public void stop() throws Exception {
-        while (startUpShutdownLock) {
-            Thread.currentThread().wait();
-        }
-        startUpShutdownLock = true;
         this.stopAndDestroy();
     }
 

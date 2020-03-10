@@ -5,6 +5,8 @@ public enum FontSize {
     VERY_SMALL,
     // 16
     SMALL,
+    // 18
+    MIDDLE_SMALL,
     // 24
     MIDDLE,
     // 32

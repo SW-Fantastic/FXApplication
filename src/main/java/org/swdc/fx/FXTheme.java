@@ -35,16 +35,16 @@ public class FXTheme {
      */
     public void initView(FXView view) throws Exception {
         View viewProp = view.getClass().getAnnotation(View.class);
+        File background = new File(this.assetsPath + "/theme/" + this.name + "/background.jpg");
+        if (!background.exists()) {
+            background = new File(this.assetsPath + "/theme/" + this.name + "/background.png");
+        }
         if (viewProp.style().length == 1 && viewProp.style()[0].equals("")) {
             if(viewProp.stage()) {
                 view.getStage()
                         .getScene()
                         .getStylesheets()
                         .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
-                File background = new File(this.assetsPath + "/theme/" + this.name + "/background.jpg");
-                if (!background.exists()) {
-                    background = new File(this.assetsPath + "/theme/" + this.name + "/background.png");
-                }
                 if (background.exists() && viewProp.background()) {
                     view.getStage()
                             .getScene()
@@ -58,20 +58,32 @@ public class FXTheme {
             }
         } else {
             String[] themes = viewProp.style();
+            if (viewProp.stage()) {
+                view.getStage()
+                        .getScene()
+                        .getStylesheets()
+                        .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
+            }
+
+            if (background.exists() && viewProp.background()) {
+                view.getStage()
+                        .getScene()
+                        .getRoot()
+                        .setStyle("-fx-background-image: url(" + background.toURI().toURL().toExternalForm() + ");");
+            }
             for (String style: themes) {
                 if (viewProp.stage()) {
                     view.getStage()
                             .getScene()
                             .getStylesheets()
-                            .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
+                            .add(new File(this.assetsPath + "/theme/" + this.name + "/" + style + ".css").toURI().toURL().toExternalForm());
                 } else {
                     view.getView()
                             .getStylesheets()
-                            .add(new File(this.assetsPath + "/theme/" + style + ".css").toURI().toURL().toExternalForm());
+                            .add(new File(this.assetsPath + "/theme/" + this.name + "/" + style + ".css").toURI().toURL().toExternalForm());
                 }
 
             }
-
         }
     }
 

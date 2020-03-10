@@ -3,6 +3,7 @@ package org.swdc.fx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.Aware;
+import org.swdc.fx.anno.SFXApplication;
 import org.swdc.fx.event.AppEvent;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
@@ -11,6 +12,7 @@ import org.swdc.fx.properties.FXProperties;
 import org.swdc.fx.services.Service;
 import org.swdc.fx.services.ServiceManager;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -77,6 +79,21 @@ public class AppComponent implements LifeCircle {
             }
         }
         return null;
+    }
+
+    public String getAssetsPath() {
+        SFXApplication application = container.getApplication()
+                .getClass().getAnnotation(SFXApplication.class);
+        return new File(application.assetsPath()).getAbsolutePath();
+    }
+
+    public String getThemeAssetsPath() {
+        return new File(new StringBuilder(getAssetsPath())
+                .append(File.separator)
+                .append("theme")
+                .append(File.separator)
+                .append(findTheme() == null ? "default" : findTheme().getName()).toString())
+                .getAbsolutePath();
     }
 
     public void emit(AppEvent event) {

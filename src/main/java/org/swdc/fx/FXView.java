@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -195,6 +196,9 @@ public class FXView extends AppComponent{
         if (look != null) {
             return look;
         }
+        if (parent instanceof SplitPane) {
+            return findById(id,parent);
+        }
         List<Node> childs = parent.getChildrenUnmodifiable();
         for (Node node : childs){
             if (id.equals(node.getId())) {
@@ -214,6 +218,14 @@ public class FXView extends AppComponent{
             ToolBar toolBar = (ToolBar) parent;
             List<Node> tools = toolBar.getItems();
             for (Node item: tools) {
+                if (id.equals(item.getId())) {
+                    return (T)item;
+                }
+            }
+            return null;
+        } else if (parent instanceof SplitPane) {
+            SplitPane splitPane = (SplitPane)parent;
+            for (Node item: splitPane.getItems()) {
                 if (id.equals(item.getId())) {
                     return (T)item;
                 }

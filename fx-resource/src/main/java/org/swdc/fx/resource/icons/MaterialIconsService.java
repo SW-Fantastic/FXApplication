@@ -25,6 +25,7 @@ public class MaterialIconsService implements IconFontService {
             fonts.put(FontSize.LARGE, Font.loadFont(module.getResourceAsStream(location),64));
             fonts.put(FontSize.MIDDLE_LARGE, Font.loadFont(module.getResourceAsStream(location),32));
             fonts.put(FontSize.MIDDLE, Font.loadFont(module.getResourceAsStream(location),24));
+            fonts.put(FontSize.MIDDLE_SMALL, Font.loadFont(module.getResourceAsStream(location),18));
             fonts.put(FontSize.SMALL, Font.loadFont(module.getResourceAsStream(location),16));
             fonts.put(FontSize.VERY_SMALL, Font.loadFont(module.getResourceAsStream(location),14));
 
