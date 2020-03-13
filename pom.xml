@@ -39,6 +39,12 @@
             <version>${fx.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.asual.lesscss/lesscss-engine -->
+        <dependency>
+            <groupId>com.asual.lesscss</groupId>
+            <artifactId>lesscss-engine</artifactId>
+            <version>1.5.1</version>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

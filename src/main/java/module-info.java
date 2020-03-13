@@ -4,6 +4,7 @@ module fx.framework.core {
     requires javafx.fxml;
     requires javafx.controls;
     requires slf4j.api;
+    requires lesscss.engine;
 
     exports org.swdc.fx;
     exports org.swdc.fx.properties;

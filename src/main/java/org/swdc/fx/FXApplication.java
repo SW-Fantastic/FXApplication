@@ -156,7 +156,10 @@ public abstract class FXApplication extends Application {
                 return;
             }
             while (startUpShutdownLock) {
-                Thread.currentThread().wait();
+                if (hasShutdown) {
+                    return;
+                }
+                Thread.currentThread().wait(1000 * 5);
             }
             logger.info("application is stopping...");
             containers.destroy();

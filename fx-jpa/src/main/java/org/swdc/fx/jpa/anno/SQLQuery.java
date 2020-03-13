@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface SQLQuery {
     String value();
+    int firstResult() default -1;
+    int maxResult() default -1;
 }

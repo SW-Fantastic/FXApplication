@@ -1,6 +1,9 @@
 package org.swdc.fx;
 
+import com.asual.lesscss.LessEngine;
 import javafx.scene.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
 
 import java.io.File;
@@ -14,6 +17,8 @@ public class FXTheme {
     private String name;
     private String assetsPath;
 
+    private static Logger logger = LoggerFactory.getLogger(FXTheme.class);
+
     /**
      * 定义一个主题
      * @param name 主题名，对应Asset路径 - theme文件夹下的主题名
@@ -22,6 +27,24 @@ public class FXTheme {
     public FXTheme(String name, String assetsPath) {
         this.name = name;
         this.assetsPath = assetsPath;
+
+        File assets = new File(this.assetsPath + "/theme/" + this.name );
+        File[] files = assets.listFiles();
+        try {
+            for (File item : files) {
+                if (item.isFile() && item.getName().endsWith("less")) {
+                    String cssName = item.getName().replace("less", "css");
+                    File css = new File(item.getParent() + File.separator + cssName);
+                    if (!css.exists()) {
+                        LessEngine lessEngine = new LessEngine();
+                        lessEngine.compile(item,css);
+                        logger.info("compile style file :" + this.name);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("fail to compile style source.");
+        }
     }
 
     public String getName() {

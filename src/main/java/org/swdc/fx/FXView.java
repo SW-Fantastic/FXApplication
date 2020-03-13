@@ -61,6 +61,7 @@ public class FXView extends AppComponent{
             try(InputStream inputStream = this.getClass().getModule().getResourceAsStream(path)){
                 if (inputStream != null) {
                     parent = loader.load(inputStream);
+                    parent.setUserData(this);
                     if (view.stage()) {
                         Scene scene = new Scene(parent);
                         stage = new Stage();
@@ -255,4 +256,12 @@ public class FXView extends AppComponent{
             return Util.showAlertDialog(null,content,title,type,this.findTheme());
         }
     }
+
+    public static <T> T fxViewByView(Node parent, Class<T> clazz) {
+        if (parent.getUserData() == null) {
+            return null;
+        }
+        return (T)clazz.cast(parent.getUserData());
+    }
+
 }
