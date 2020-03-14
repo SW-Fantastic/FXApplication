@@ -33,9 +33,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class FXApplication extends Application {
 
-    private static Boolean startUpShutdownLock = false;
-
-    private static boolean hasShutdown = false;
+    private static final Object syncObject = new Object();
 
     private ApplicationContainer containers;
 
@@ -45,59 +43,60 @@ public abstract class FXApplication extends Application {
 
     private Runnable shutdownHook = null;
 
+    private Boolean hasStopped = true;
+
     /**
      * 在JavaFX启动的时候调用，这里开始初始化容器和模块，引导整个APP
      * 的启动。
      * @throws Exception
      */
     public void init() throws Exception {
-        while (startUpShutdownLock) {
-            Thread.currentThread().wait();
-        }
-        startUpShutdownLock = true;
-        if (shutdownHook == null) {
-            shutdownHook = this::stopAndDestroy;
-            Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
-        }
-        InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
-        if (bannerInput == null) {
-            bannerInput = FXApplication.class.getModule().getResourceAsStream("banner.txt");
-        }
-        String banner = Util.readStreamAsString(bannerInput);
-        System.out.println(banner);
-        bannerInput.close();
-        logger.info(" Application initializing..");
+        synchronized (syncObject) {
+            hasStopped = false;
+            if (shutdownHook == null) {
+                shutdownHook = this::stopAndDestroy;
+                Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+            }
+            InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
+            if (bannerInput == null) {
+                bannerInput = FXApplication.class.getModule().getResourceAsStream("banner.txt");
+            }
+            String banner = Util.readStreamAsString(bannerInput);
+            System.out.println(banner);
+            bannerInput.close();
+            logger.info(" Application initializing..");
 
-        containers = new ApplicationContainer(this);
+            containers = new ApplicationContainer(this);
 
-        ConfigManager configManager = containers.getComponent(ConfigManager.class);
-        SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
-        configManager.setAssetsPath(application.assetsPath());
+            ConfigManager configManager = containers.getComponent(ConfigManager.class);
+            SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
+            configManager.setAssetsPath(application.assetsPath());
 
-        logger.info(" on launch..");
-        this.onLaunch(configManager);
-        DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
+            logger.info(" on launch..");
+            this.onLaunch(configManager);
+            DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
 
-        if (prop == null) {
-            logger.error(" can not load configuration file, application will stop");
-            throw new RuntimeException("配置读取失败。");
-        }
+            if (prop == null) {
+                logger.error(" can not load configuration file, application will stop");
+                throw new RuntimeException("配置读取失败。");
+            }
 
-        splash = application.splash().getConstructor().newInstance();
-        logger.info(" loading splash");
-        File splashFile = new File(configManager.getAssetsPath() + "/image/splash.png");
-        if (!splashFile.exists()) {
-            splashFile = new File(configManager.getAssetsPath() + "/image/splash.jpg");
-        }
-        if (!splashFile.exists()) {
-            logger.warn(" splash image not found.");
-            splash = null;
-        }
-        if (splash != null) {
-            try (FileInputStream inputStream = new FileInputStream(splashFile)){
-                splash.setImage(new Image(inputStream));
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            splash = application.splash().getConstructor().newInstance();
+            logger.info(" loading splash");
+            File splashFile = new File(configManager.getAssetsPath() + "/image/splash.png");
+            if (!splashFile.exists()) {
+                splashFile = new File(configManager.getAssetsPath() + "/image/splash.jpg");
+            }
+            if (!splashFile.exists()) {
+                logger.warn(" splash image not found.");
+                splash = null;
+            }
+            if (splash != null) {
+                try (FileInputStream inputStream = new FileInputStream(splashFile)){
+                    splash.setImage(new Image(inputStream));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -124,10 +123,12 @@ public abstract class FXApplication extends Application {
             splash.getStage().show();
         }
         CompletableFuture.runAsync(() -> {
-            this.registerManagerContainers();
-            this.loadExtraModules();
-            logger.info(" on start");
-            this.onStart();
+            synchronized (syncObject) {
+                this.registerManagerContainers();
+                this.loadExtraModules();
+                logger.info(" on start");
+                this.onStart();
+            }
         }).whenCompleteAsync((v,e) -> {
             if (e != null) {
                 logger.error("exception when loading application:",e);
@@ -138,7 +139,6 @@ public abstract class FXApplication extends Application {
                 SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
                 FXView view = viewManager.getComponent(application.mainView());
                 logger.info("application started.");
-                startUpShutdownLock = false;
                 if (splash != null) {
                     splash.getStage().close();
                 }
@@ -151,23 +151,18 @@ public abstract class FXApplication extends Application {
      * 终止Application的运行
      */
     public void stopAndDestroy() {
-        try {
-            if (hasShutdown) {
-                return;
-            }
-            while (startUpShutdownLock) {
-                if (hasShutdown) {
+        synchronized (syncObject) {
+            try {
+                if (hasStopped) {
                     return;
                 }
-                Thread.currentThread().wait(1000 * 5);
-            }
-            logger.info("application is stopping...");
-            containers.destroy();
-            startUpShutdownLock = false;
-            logger.info("application has stopped.");
-            hasShutdown = true;
-        } catch (Exception ex) {
+                logger.info("application is stopping...");
+                containers.destroy();
+                logger.info("application has stopped.");
+                hasStopped = true;
+            } catch (Exception ex) {
 
+            }
         }
     }
 

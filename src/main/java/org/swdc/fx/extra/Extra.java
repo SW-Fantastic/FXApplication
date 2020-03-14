@@ -36,7 +36,7 @@ public interface Extra<R> {
      * 回调
      * @param comp
      */
-    Object postProcess(R comp);
+    Object postProcess(Object comp);
 
     /**
      * 清除Extra的影响，在destroy的时候回调

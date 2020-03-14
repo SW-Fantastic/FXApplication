@@ -20,10 +20,6 @@ import java.util.stream.Collectors;
 
 public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository<E, ID>, LifeCircle {
 
-    private ThreadLocal<EntityManager> localEm = new ThreadLocal<>();
-
-    private List<EntityManager> entityManagerList = new ArrayList<>();
-
     private JPAExtraModule extraModule;
 
     private Class<E> eClass;
@@ -37,12 +33,8 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        EntityManager manager = localEm.get();
-        if (manager == null) {
-            manager = extraModule.getEntityFactory().createEntityManager();
-            localEm.set(manager);
-            entityManagerList.add(manager);
-        }
+        EntityManager manager = extraModule.getEntityManager();
+
         String name = method.getName();
         if (name.equals("getOne") || name.equals("getAll") || name.equals("save") || name.equals("remove")) {
             return method.invoke(this,args);
@@ -57,9 +49,14 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         Modify modify = method.getAnnotation(Modify.class);
         if (query != null) {
             // 是一个修改的query，需要事务
-            if (modify != null) {
-                manager.getTransaction().begin();
+            boolean autoCommit = false;
+            if (!manager.getTransaction().isActive()) {
+                if (modify != null) {
+                    manager.getTransaction().begin();
+                    autoCommit = true;
+                }
             }
+
             try {
                 Class returnClazz = method.getReturnType();
                 if (Set.class.isAssignableFrom(returnClazz)) {
@@ -80,13 +77,13 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
                 return null;
             } catch (Exception ex) {
                 // 回滚事务
-                if (modify != null) {
+                if (modify != null && autoCommit) {
                     manager.getTransaction().rollback();
                 }
                 logger.error("fail to execute query: " + method.getName(), ex);
             } finally {
                 // 提交事务
-                if (modify != null) {
+                if (modify != null && autoCommit) {
                     manager.getTransaction().commit();
                 }
             }
@@ -120,7 +117,7 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     @Override
     public E getOne(ID id) {
-        EntityManager entityManager = localEm.get();
+        EntityManager entityManager = extraModule.getEntityManager();
         if (entityManager == null) {
             logger.error("no entity manager at current thread");
             return null;
@@ -130,7 +127,7 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     @Override
     public List<E> getAll() {
-        EntityManager entityManager = localEm.get();
+        EntityManager entityManager = extraModule.getEntityManager();
         if (entityManager == null) {
             logger.error("no entity manager at current thread");
             return new ArrayList<>();
@@ -141,11 +138,15 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     @Override
     public void save(E entry) {
-        EntityManager entityManager = localEm.get();
-        entityManager.getTransaction().begin();
+        EntityManager entityManager = extraModule.getEntityManager();
         if (entityManager == null) {
             logger.error("no entity manager at current thread");
             return;
+        }
+        boolean autoCommit = false;
+        if (!entityManager.getTransaction().isActive()) {
+            entityManager.getTransaction().begin();
+            autoCommit = true;
         }
         Field idField = getIdField(entry.getClass());
         if (idField == null) {
@@ -157,18 +158,24 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             Object id = idField.get(entry);
             if (id == null) {
                 entityManager.persist(entry);
-                entityManager.getTransaction().commit();
+                if (autoCommit) {
+                    entityManager.getTransaction().commit();
+                }
                 return;
             }
             E entExisted = this.getOne((ID) id);
             if (entExisted == null) {
                 idField.set(entry, null);
                 entityManager.persist(entry);
-                entityManager.getTransaction().commit();
+                if (autoCommit) {
+                    entityManager.getTransaction().commit();
+                }
                 return;
             }
             entityManager.merge(entry);
-            entityManager.getTransaction().commit();
+            if (autoCommit) {
+                entityManager.getTransaction().commit();
+            }
         } catch (Exception ex) {
             logger.error("error persistent entry: " + entry.getClass().getSimpleName(), ex);
         }
@@ -197,29 +204,21 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     @Override
     public void remove(E entry) {
-        EntityManager entityManager = localEm.get();
+        EntityManager entityManager = extraModule.getEntityManager();
         if (entityManager == null) {
             logger.error("no entity manager at current thread");
             return;
         }
-        boolean tx = false;
+        boolean autoCommit = false;
         if (!entityManager.getTransaction().isActive()) {
-            tx = true;
+            autoCommit = true;
             entityManager.getTransaction().begin();
         }
+        entityManager.refresh(entry);
         entityManager.remove(entry);
-        if(tx) {
+        if(autoCommit) {
             entityManager.getTransaction().commit();
         }
     }
 
-    @Override
-    public void destroy() {
-        for (EntityManager em: entityManagerList){
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().commit();
-            }
-            em.close();
-        }
-    }
 }

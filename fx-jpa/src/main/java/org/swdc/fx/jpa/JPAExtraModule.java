@@ -6,6 +6,7 @@ import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.jpa.scanner.IPackageScanner;
 
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.io.InputStream;
@@ -13,16 +14,21 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.*;
 
-public class JPAExtraModule extends ExtraModule<JPARepository> {
+public class JPAExtraModule extends ExtraModule<Object> {
 
     private EntityManagerFactory entityFactory;
 
-    private Map<Class, JPARepository> repositoryMap = new HashMap<>();
+    private ThreadLocal<EntityManager> localEm = new ThreadLocal<>();
+
+    private List<EntityManager> entityManagerList = new ArrayList<>();
 
     private List<DefaultRepository> handlers = new ArrayList<>();
 
     @Override
-    protected <R extends JPARepository> R instance(Class<R> target) {
+    protected Object instance(Class target) {
+        if (target == JPAService.class) {
+            return new JPAService(this);
+        }
         DefaultRepository repository = new DefaultRepository();
         ParameterizedType parameterizedType = (ParameterizedType) target.getGenericInterfaces()[0];
 
@@ -31,12 +37,12 @@ public class JPAExtraModule extends ExtraModule<JPARepository> {
         repository.init(this, entityClass);
         JPARepository jpaRepository = (JPARepository) Proxy.newProxyInstance(getClass().getClassLoader(),new Class[]{target},repository);
         handlers.add(repository);
-        return (R)jpaRepository;
+        return jpaRepository;
     }
 
     @Override
     public boolean isComponentOf(Class aClass) {
-        return JPARepository.class.isAssignableFrom(aClass);
+        return JPARepository.class.isAssignableFrom(aClass) || aClass == JPAService.class;
     }
 
     public EntityManagerFactory getEntityFactory() {
@@ -70,23 +76,43 @@ public class JPAExtraModule extends ExtraModule<JPARepository> {
         return true;
     }
 
+    @Override
     public boolean destroy(ApplicationContainer applicationContainer) {
         for(DefaultRepository repository :this.handlers) {
             repository.destroy();
+        }
+        for (EntityManager em: entityManagerList){
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().commit();
+            }
+            em.close();
         }
         this.entityFactory.close();
         return true;
     }
 
+    @Override
     public <T extends Container> boolean support(Class<T> aClass) {
-        return false;
+       return false;
     }
 
-    public Object postProcess(JPARepository jpaRepository) {
-        return jpaRepository;
+    @Override
+    public Object postProcess(Object instance) {
+        return instance;
     }
 
-    public void disposeOnComponent(JPARepository jpaRepository) {
+    public void disposeOnComponent(Object jpaRepository) {
 
     }
+
+    public EntityManager getEntityManager() {
+        EntityManager entityManager = localEm.get();
+        if (entityManager == null) {
+            entityManager = entityFactory.createEntityManager();
+            localEm.set(entityManager);
+            entityManagerList.add(entityManager);
+        }
+        return entityManager;
+    }
+
 }
