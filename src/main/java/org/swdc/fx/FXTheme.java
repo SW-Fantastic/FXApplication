@@ -2,6 +2,7 @@ package org.swdc.fx;
 
 import com.asual.lesscss.LessEngine;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
@@ -75,7 +76,7 @@ public class FXTheme {
                             .setStyle("-fx-background-image: url(" + background.toURI().toURL().toExternalForm() + ");");
                 }
             } else {
-                view.getView()
+                ((Parent)view.getView())
                         .getStylesheets()
                         .add(new File(this.assetsPath + "/theme/" + this.name + "/stage.css").toURI().toURL().toExternalForm());
             }
@@ -101,7 +102,7 @@ public class FXTheme {
                             .getStylesheets()
                             .add(new File(this.assetsPath + "/theme/" + this.name + "/" + style + ".css").toURI().toURL().toExternalForm());
                 } else {
-                    view.getView()
+                    ((Parent)view.getView())
                             .getStylesheets()
                             .add(new File(this.assetsPath + "/theme/" + this.name + "/" + style + ".css").toURI().toURL().toExternalForm());
                 }

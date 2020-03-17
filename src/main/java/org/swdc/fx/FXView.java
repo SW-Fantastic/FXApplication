@@ -9,8 +9,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -188,8 +186,8 @@ public class FXView extends AppComponent{
      * 获取ui对象。
      * @return
      */
-    public Parent getView() {
-        return parent;
+    public <T> T getView() {
+        return (T)parent;
     }
 
     public <T> T findById(String id) {

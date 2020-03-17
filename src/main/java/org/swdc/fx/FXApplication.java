@@ -41,8 +41,6 @@ public abstract class FXApplication extends Application {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Runnable shutdownHook = null;
-
     private Boolean hasStopped = true;
 
     /**
@@ -53,10 +51,6 @@ public abstract class FXApplication extends Application {
     public void init() throws Exception {
         synchronized (syncObject) {
             hasStopped = false;
-            if (shutdownHook == null) {
-                shutdownHook = this::stopAndDestroy;
-                Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
-            }
             InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
             if (bannerInput == null) {
                 bannerInput = FXApplication.class.getModule().getResourceAsStream("banner.txt");
@@ -188,6 +182,7 @@ public abstract class FXApplication extends Application {
     @Override
     public void stop() throws Exception {
         this.stopAndDestroy();
+        System.exit(0);
     }
 
     /**

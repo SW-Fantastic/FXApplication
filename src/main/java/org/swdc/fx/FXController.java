@@ -16,7 +16,7 @@ public abstract class FXController extends AppComponent implements Initializable
         this.view = view;
     }
 
-    public FXView getView() {
-        return view;
+    public <T> T getView() {
+        return (T)view;
     }
 }
