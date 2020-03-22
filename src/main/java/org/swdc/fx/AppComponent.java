@@ -14,6 +14,7 @@ import org.swdc.fx.services.ServiceManager;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -85,6 +86,16 @@ public class AppComponent implements LifeCircle {
         SFXApplication application = container.getApplication()
                 .getClass().getAnnotation(SFXApplication.class);
         return new File(application.assetsPath()).getAbsolutePath();
+    }
+
+    public <T> List<T> getScoped(Class<T> scopeClazz) {
+        List<Container> containers = container.listComponents();
+        for (Container container: containers) {
+            if (container.isComponentOf(scopeClazz)) {
+                return container.listComponents();
+            }
+        }
+        return Collections.emptyList();
     }
 
     public String getThemeAssetsPath() {

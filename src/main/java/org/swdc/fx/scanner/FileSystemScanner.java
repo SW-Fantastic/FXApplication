@@ -1,4 +1,4 @@
-package org.swdc.fx.jpa.scanner;
+package org.swdc.fx.scanner;
 
 import java.io.File;
 import java.util.Arrays;
@@ -52,7 +52,26 @@ public class FileSystemScanner implements IPackageScanner {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
+	@Override
+	public List<Class<?>> scanSubClass(Class<?> parent) {
+		if (this.result != null) {
+			return  this.result.stream()
+					.filter(parent::isAssignableFrom)
+					.collect(Collectors.toList());
+		}
+		if (baseDir == null || !baseDir.exists() || baseDir.isFile()) {
+			throw new RuntimeException("文件不存在。");
+		}
+		try {
+			LinkedList<Class<?>> container = new LinkedList<>();
+			this.scanClasses(this::assignableAdded ,base, baseDir, container, parent);
+			return new LinkedList<>(container);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private void scanClasses(ActionOnClassFound founded, String base, File file, List<Class<?>> container, Class<?> reference) throws ClassNotFoundException {
 		if (file.isDirectory()) {
 			List<File> files = Arrays.asList(file.listFiles());

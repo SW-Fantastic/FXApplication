@@ -1,4 +1,4 @@
-package org.swdc.fx.jpa.scanner;
+package org.swdc.fx.scanner;
 
 import java.util.List;
 

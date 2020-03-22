@@ -1,4 +1,4 @@
-package org.swdc.fx.jpa.scanner;
+package org.swdc.fx.scanner;
 
 import java.io.File;
 import java.net.JarURLConnection;
@@ -58,8 +58,19 @@ public class ArchivedScanner implements IPackageScanner{
 		this.scanClasses(this::annotationAdded, container, null);
 		return new LinkedList<>(container);
 	}
-	
-	
+
+	@Override
+	public List<Class<?>> scanSubClass(Class<?> parent) {
+		if (result != null) {
+			return result.stream()
+					.filter(parent::isAssignableFrom)
+					.collect(Collectors.toList());
+		}
+		LinkedList<Class<?>> container = new LinkedList<>();
+		this.scanClasses(this::assignableAdded, container, null);
+		return new LinkedList<>(container);
+	}
+
 	/**
 	 * 进行类扫描
 	 * @param whenClassScaned 发现class后要做的事情

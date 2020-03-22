@@ -3,7 +3,7 @@ package org.swdc.fx.jpa;
 import org.swdc.fx.ApplicationContainer;
 import org.swdc.fx.Container;
 import org.swdc.fx.extra.ExtraModule;
-import org.swdc.fx.jpa.scanner.IPackageScanner;
+import org.swdc.fx.scanner.IPackageScanner;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;

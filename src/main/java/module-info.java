@@ -12,4 +12,5 @@ module fx.framework.core {
     exports org.swdc.fx.services;
     exports org.swdc.fx.extra;
     exports org.swdc.fx.event;
+    exports org.swdc.fx.scanner;
 }

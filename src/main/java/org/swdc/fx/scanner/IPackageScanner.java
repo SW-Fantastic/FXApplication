@@ -1,4 +1,4 @@
-package org.swdc.fx.jpa.scanner;
+package org.swdc.fx.scanner;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -18,6 +18,8 @@ public interface IPackageScanner {
 	 * @return
 	 */
 	List<Class<?>> scanAnnotation(Class<?> annotationClazz);
+
+	List<Class<?>> scanSubClass(Class<?> parent);
 	
 	/**
 	 * 执行扫描的方法

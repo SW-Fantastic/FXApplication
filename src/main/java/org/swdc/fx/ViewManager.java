@@ -61,7 +61,7 @@ public class ViewManager extends Container<FXView> {
             theme.initView(view);
             return view;
         } catch (Exception ex) {
-            logger.error("fail to init view : " + target.getSimpleName());
+            logger.error("fail to init view : " + target.getSimpleName(), ex);
         }
         return null;
     }

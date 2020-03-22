@@ -121,7 +121,7 @@ public abstract class FXApplication extends Application {
                 this.registerManagerContainers();
                 this.loadExtraModules();
                 logger.info(" on start");
-                this.onStart();
+                this.onStart(containers);
             }
         }).whenCompleteAsync((v,e) -> {
             if (e != null) {
@@ -237,7 +237,7 @@ public abstract class FXApplication extends Application {
      * Application完成初始化但是没有
      * 启动任何界面的时候会调用
      */
-    protected void onStart(){
+    protected void onStart(ApplicationContainer container){
 
     }
 
