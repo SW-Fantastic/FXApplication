@@ -8,4 +8,6 @@ module fx.framework.resource {
    exports org.swdc.fx.resource.icons;
    exports org.swdc.fx.resource.source;
 
+   provides org.swdc.fx.extra.IconSPIService with org.swdc.fx.resource.icons.FontawsomeService;
+
 }

@@ -48,7 +48,7 @@ public class FXView extends AppComponent{
      * 就会尝试使用create方法创建View。
      * @return
      */
-    protected final boolean loadFxmlView() {
+    protected boolean loadFxmlView() {
         try {
             View view = this.getClass().getAnnotation(View.class);
             FXMLLoader loader = new FXMLLoader();
@@ -108,7 +108,7 @@ public class FXView extends AppComponent{
     /**
      * ViewManager会使用此方法，尝试通过Create创建View。
      */
-    protected final void createView() {
+    protected void createView() {
         View view = this.getClass().getAnnotation(View.class);
         this.parent = create();
         if (view.stage()) {
@@ -191,7 +191,7 @@ public class FXView extends AppComponent{
     }
 
     public <T> T findById(String id) {
-        T look = (T)parent.lookup("#" + id);
+        T look = (T) ((Parent)this.getView()).lookup("#" + id);
         if (look != null) {
             return look;
         }

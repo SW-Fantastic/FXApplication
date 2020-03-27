@@ -32,6 +32,7 @@ public class ConfigManager extends Container<FXProperties> {
                 resolvers.put(properties.resolve(), resolver);
             }
             FXProperties prop = resolver.load(clazz);
+            prop.setResolver(resolver);
             return (R)prop;
         } catch (Exception ex) {
             logger.error("fail to load properties: "+ clazz.getSimpleName());

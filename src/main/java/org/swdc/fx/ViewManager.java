@@ -55,8 +55,10 @@ public class ViewManager extends Container<FXView> {
                     }
                 }
             }
-            if (view.hasStage()) {
-                view.getStage().getIcons().addAll(this.icons);
+            if (!(view instanceof PopupView)) {
+                if (view.hasStage()) {
+                    view.getStage().getIcons().addAll(this.icons);
+                }
             }
             theme.initView(view);
             return view;

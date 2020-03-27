@@ -2,9 +2,10 @@ module fx.framework.core {
     requires javafx.graphics;
     requires java.desktop;
     requires javafx.fxml;
-    requires javafx.controls;
+    requires javafx.swing;
     requires slf4j.api;
     requires lesscss.engine;
+    requires org.controlsfx.controls;
 
     exports org.swdc.fx;
     exports org.swdc.fx.properties;
@@ -13,4 +14,6 @@ module fx.framework.core {
     exports org.swdc.fx.extra;
     exports org.swdc.fx.event;
     exports org.swdc.fx.scanner;
+
+    uses org.swdc.fx.extra.IconSPIService;
 }

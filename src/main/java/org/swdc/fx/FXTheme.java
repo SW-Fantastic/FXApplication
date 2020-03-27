@@ -58,6 +58,10 @@ public class FXTheme {
      * @throws Exception url异常，一般不会出现
      */
     public void initView(FXView view) throws Exception {
+        if (view instanceof PopupView) {
+            this.initFXView(view.getView());
+            return;
+        }
         View viewProp = view.getClass().getAnnotation(View.class);
         File background = new File(this.assetsPath + "/theme/" + this.name + "/background.jpg");
         if (!background.exists()) {

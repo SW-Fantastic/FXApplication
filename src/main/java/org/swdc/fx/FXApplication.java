@@ -39,7 +39,7 @@ public abstract class FXApplication extends Application {
 
     private FXSplash splash;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Boolean hasStopped = true;
 
@@ -141,6 +141,10 @@ public abstract class FXApplication extends Application {
         });
     }
 
+    protected void onStop(ApplicationContainer container){
+
+    }
+
     /**
      * 终止Application的运行
      */
@@ -150,6 +154,8 @@ public abstract class FXApplication extends Application {
                 if (hasStopped) {
                     return;
                 }
+                logger.info("on stop");
+                this.onStart(containers);
                 logger.info("application is stopping...");
                 containers.destroy();
                 logger.info("application has stopped.");
@@ -256,6 +262,24 @@ public abstract class FXApplication extends Application {
         } catch (Exception ex) {
             return Collections.emptyList();
         }
+    }
+
+    public <T> T findComponent(Class<T> clazz) {
+        List<Container> containerList = containers.listComponents();
+        for (Container container: containerList) {
+            if (container.isComponentOf(clazz)) {
+                return (T)container.getComponent(clazz);
+            }
+        }
+
+        ExtraManager extraManager = containers.getComponent(ExtraManager.class);
+        List<ExtraModule> modules = extraManager.listComponents();
+        for (ExtraModule module : modules) {
+            if (module.isComponentOf(clazz)) {
+                return (T)module.getComponent(clazz);
+            }
+        }
+        return null;
     }
 
 }

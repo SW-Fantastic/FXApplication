@@ -3,6 +3,7 @@ package org.swdc.fx.resource.icons;
 import javafx.scene.text.Font;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.swdc.fx.extra.IconSPIService;
 import org.swdc.fx.resource.IconFontService;
 import org.swdc.fx.resource.ResourceModule;
 
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class FontawsomeService implements IconFontService {
+public class FontawsomeService implements IconFontService, IconSPIService {
 
     private Map<String, Character> awesomeMap = new HashMap<>();
     private Map<FontSize, Font> fonts = new HashMap<>();
@@ -747,5 +748,20 @@ public class FontawsomeService implements IconFontService {
     @Override
     public Font getFont(FontSize size) {
         return fonts.get(size);
+    }
+
+    @Override
+    public String getNamedIcon(IconSet icon) {
+        switch (icon) {
+            case OPEN:
+                return getFontIcon("folder_open");
+            default:
+                return "";
+        }
+    }
+
+    @Override
+    public Font getFont() {
+        return getFont(FontSize.MIDDLE_SMALL);
     }
 }
