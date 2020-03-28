@@ -13,12 +13,18 @@ public abstract class FXProperties extends AppComponent {
         this.resolver = resolver;
     }
 
+    private Node editor;
+
     public Node getEditor(){
+        if (editor != null) {
+            return editor;
+        }
         try {
             PropertySheet propertySheet = new PropertySheet(PropertyEditors.getProperties(this));
             propertySheet.setPropertyEditorFactory(item -> PropertyEditors.getEditor(item, this));
             propertySheet.setModeSwitcherVisible(false);
             propertySheet.getStyleClass().add("prop-sheets");
+            editor = propertySheet;
             return propertySheet;
         } catch (Exception e) {
             return null;
