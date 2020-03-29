@@ -9,6 +9,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -227,6 +228,11 @@ public class FXView extends AppComponent{
             for (Node item: splitPane.getItems()) {
                 if (id.equals(item.getId())) {
                     return (T)item;
+                } else {
+                    Node target = findById(id,item);
+                    if (target != null) {
+                        return (T) target;
+                    }
                 }
             }
             return null;

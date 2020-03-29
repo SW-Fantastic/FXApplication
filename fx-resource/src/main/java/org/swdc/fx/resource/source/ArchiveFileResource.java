@@ -31,14 +31,14 @@ public class ArchiveFileResource implements Resource {
         this.archiveURI = getVirtualURI(file);
     }
 
-    private URI getVirtualURI(File file) {
+    public static URI getVirtualURI(File file) {
         return URI.create("jar:file:" + Paths.get(file.getAbsolutePath()).toUri().getPath());
     }
 
-    private FileSystem createAFS(URI uri) throws IOException {
+    public static FileSystem createAFS(URI uri) throws IOException {
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
-        return FileSystems.newFileSystem(archiveURI,env);
+        return FileSystems.newFileSystem(uri,env);
     }
 
     @Override
