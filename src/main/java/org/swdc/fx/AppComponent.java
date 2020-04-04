@@ -14,6 +14,7 @@ import org.swdc.fx.services.ServiceManager;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -92,7 +93,14 @@ public class AppComponent implements LifeCircle {
         List<Container> containers = container.listComponents();
         for (Container container: containers) {
             if (container.isComponentOf(scopeClazz)) {
-                return container.listComponents();
+               List<Object> content = container.listComponents();
+               List<T> result = new ArrayList<>();
+               for (Object comp: content){
+                   if (scopeClazz.isAssignableFrom(comp.getClass())) {
+                       result.add((T)comp);
+                   }
+               }
+               return result;
             }
         }
         return Collections.emptyList();

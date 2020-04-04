@@ -1,5 +1,7 @@
 package org.swdc.fx.anno;
 
+import org.swdc.fx.properties.AbstractPropEditor;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -54,4 +56,9 @@ public @interface ConfigProp {
      */
     Class<? extends PropResolver> resolver() default PropResolver.class;
 
+    /**
+     * 指定编辑器的类，需要在Type为Custom的时候使用
+     * @return
+     */
+    Class<? extends AbstractPropEditor> editor() default AbstractPropEditor.class;
 }

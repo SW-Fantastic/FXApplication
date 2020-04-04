@@ -49,6 +49,11 @@ public enum PropType {
     /**
      * 复选框
      */
-    CHECK
+    CHECK,
+
+    /**
+     * 自定义配置，需要在注解提供editor。
+     */
+    CUSTOM,
 
 }

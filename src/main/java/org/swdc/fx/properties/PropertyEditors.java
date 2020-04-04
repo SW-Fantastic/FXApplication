@@ -457,6 +457,15 @@ public class PropertyEditors {
                 return PropertyEditors.createNumberRangeEditor(property);
             case NUMBER:
                 return PropertyEditors.createNumberEditor(property);
+            case CUSTOM:
+                try {
+                    return propData.editor()
+                            .getConstructor(ConfigProperty.class, AppComponent.class)
+                            .newInstance(property,parent)
+                            .createEditor();
+                } catch (Exception e) {
+                    logger.error("fail to create custom editr.",e);
+                }
         }
         return null;
     }

@@ -92,7 +92,7 @@ public class BasicPropertiesResolver implements PropertiesResolver {
             prop.load(propSource);
             Class targetClazz = clazz;
             while (targetClazz != null) {
-                for (Field field : clazz.getDeclaredFields()) {
+                for (Field field : targetClazz.getDeclaredFields()) {
                     PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(),targetClazz);
                     Method writer = propertyDescriptor.getWriteMethod();
                     Parameter param = writer.getParameters()[0];
