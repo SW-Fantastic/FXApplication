@@ -34,7 +34,9 @@ public class FXSplash {
         container = new BorderPane();
         ImageView imageView = new ImageView(image);
         container.setCenter(imageView);
+        container.setStyle("-fx-background:transparent;");
         Scene scene = new Scene(container);
+        scene.setFill(null);
         stage.setScene(scene);
         return stage;
     }

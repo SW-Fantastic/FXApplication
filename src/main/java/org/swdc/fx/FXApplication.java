@@ -136,9 +136,13 @@ public abstract class FXApplication extends Application {
                 if (splash != null) {
                     splash.getStage().close();
                 }
-                view.show();
+                this.appHasStarted(view);
             });
         });
+    }
+
+    protected void appHasStarted(FXView mainView) {
+        mainView.show();
     }
 
     protected void onStop(ApplicationContainer container){
