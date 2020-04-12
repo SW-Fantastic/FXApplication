@@ -1,5 +1,6 @@
 package org.swdc.fx;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
@@ -7,8 +8,13 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.SFXApplication;
+import org.swdc.fx.event.AppEvent;
+import org.swdc.fx.net.data.MainParameter;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
+import org.swdc.fx.net.ApplicationService;
+import org.swdc.fx.net.data.ExternalMessage;
+import org.swdc.fx.net.MainParamHandler;
 import org.swdc.fx.properties.ConfigManager;
 import org.swdc.fx.properties.DefaultUIConfigProp;
 import org.swdc.fx.services.ServiceManager;
@@ -17,8 +23,10 @@ import org.swdc.fx.util.Util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Application基类，
@@ -43,6 +51,8 @@ public abstract class FXApplication extends Application {
 
     private Boolean hasStopped = true;
 
+    private ApplicationService service;
+
     /**
      * 在JavaFX启动的时候调用，这里开始初始化容器和模块，引导整个APP
      * 的启动。
@@ -64,6 +74,25 @@ public abstract class FXApplication extends Application {
 
             ConfigManager configManager = containers.getComponent(ConfigManager.class);
             SFXApplication application = this.getClass().getAnnotation(SFXApplication.class);
+
+            if (application.singleton()) {
+                service = new ApplicationService(this);
+                if (!service.startUp()) {
+                    logger.warn("application has started, invoking existed.");
+                    // 无法启动service，说明存在另一个应用
+                    // 标注为singleton，即单例起动，停止本实例启动过程
+                    // 并且发送启动参数到已知实例。
+                    List<String> params = getParameters().getRaw();
+                    MainParameter parameter = new MainParameter(params.toArray(new String[0]));
+                    ObjectMapper mapper = new ObjectMapper();
+                    byte[] data = mapper.writeValueAsBytes(parameter);
+                    ExternalMessage message = new ExternalMessage(data, MainParameter.class);
+                    service.pushMessage(message);
+                    System.exit(0);
+                }
+                service.addListener(new MainParamHandler());
+            }
+
             configManager.setAssetsPath(application.assetsPath());
 
             logger.info(" on launch..");
@@ -161,6 +190,9 @@ public abstract class FXApplication extends Application {
                 logger.info("on stop");
                 this.onStart(containers);
                 logger.info("application is stopping...");
+                if (service != null) {
+                    service.shutdown();
+                }
                 containers.destroy();
                 logger.info("application has stopped.");
                 hasStopped = true;
@@ -284,6 +316,10 @@ public abstract class FXApplication extends Application {
             }
         }
         return null;
+    }
+
+    public void emit(AppEvent event) {
+        containers.emit(event);
     }
 
 }

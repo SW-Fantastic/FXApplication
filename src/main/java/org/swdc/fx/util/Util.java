@@ -12,14 +12,6 @@ import java.util.stream.Stream;
 
 public class Util {
 
-    public static String readAsString(File file) {
-        try (FileInputStream fin = new FileInputStream(file)){
-            return readStreamAsString(fin);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
     public static String readStreamAsString(InputStream in) {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
@@ -32,28 +24,6 @@ public class Util {
             ex.printStackTrace();
             return null;
         }
-    }
-
-    public static List<Field> getClassFields(Class clazz) {
-        ArrayList<Field> fields = new ArrayList<>();
-        Class target = clazz;
-        while (target != null && target != Object.class) {
-            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
-            target = clazz.getSuperclass();
-        }
-        return fields;
-    }
-
-    public static Map<Class, Field> getClassTypeFieldMap(Class clazz) {
-        HashMap<Class, Field> fields = new HashMap<>();
-        Class target = clazz;
-        while (target != null && target != Object.class) {
-            for (Field field : clazz.getDeclaredFields()) {
-                fields.put(field.getType(), field);
-            }
-            target = target.getSuperclass();
-        }
-        return fields;
     }
 
     public static Optional<ButtonType> showAlertDialog(Stage owner, String content, String title, Alert.AlertType type, FXTheme theme) {
@@ -69,5 +39,24 @@ public class Util {
             throw new RuntimeException(ex);
         }
     }
+
+    public static byte[] intToByte(int val){
+        byte[] b = new byte[4];
+        b[0] = (byte)(val & 0xff);
+        b[1] = (byte)((val >> 8) & 0xff);
+        b[2] = (byte)((val >> 16) & 0xff);
+        b[3] = (byte)((val >> 24) & 0xff);
+        return b;
+    }
+
+    public static int byteToInt(byte[] bytes) {
+        int value=0;
+        for(int i = 0; i < 4; i++) {
+            int shift= (3-i) * 8;
+            value +=(bytes[i] & 0xFF) << shift;
+        }
+        return value;
+    }
+
 
 }

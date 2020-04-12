@@ -6,6 +6,9 @@ module fx.framework.core {
     requires slf4j.api;
     requires lesscss.engine;
     requires org.controlsfx.controls;
+    requires com.fasterxml.jackson.databind;
+
+    opens org.swdc.fx.net.data to com.fasterxml.jackson.databind;
 
     exports org.swdc.fx;
     exports org.swdc.fx.properties;
@@ -14,6 +17,7 @@ module fx.framework.core {
     exports org.swdc.fx.extra;
     exports org.swdc.fx.event;
     exports org.swdc.fx.scanner;
+    exports org.swdc.fx.net.data;
 
     uses org.swdc.fx.extra.IconSPIService;
 }

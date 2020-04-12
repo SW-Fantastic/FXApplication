@@ -37,4 +37,6 @@ public @interface SFXApplication {
      */
     String assetsPath() default "./assets";
 
+    boolean singleton() default false;
+
 }
