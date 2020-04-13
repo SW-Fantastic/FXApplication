@@ -55,7 +55,7 @@ public class ArchivedScanner implements IPackageScanner{
 					.collect(Collectors.toList());
 		}
 		LinkedList<Class<?>> container = new LinkedList<>();
-		this.scanClasses(this::annotationAdded, container, null);
+		this.scanClasses(this::annotationAdded, container, annotationClazz);
 		return new LinkedList<>(container);
 	}
 
@@ -90,9 +90,11 @@ public class ArchivedScanner implements IPackageScanner{
 				JarEntry ent = itr.nextElement();
 				if(!ent.isDirectory() && ent.getName().endsWith("class") && !ent.getName().contains("module-info")) {
 					try {
-						Class<?> cls = Class.forName(ent.getName().replaceAll("/", ".").replace(".class", ""));
+						String clazzName = ent.getName().replaceAll("/", ".").replace(".class", "");
+						Class<?> cls = Class.forName(clazzName);
 						whenClassScaned.accept(cls, container, reference);
 					}catch (Throwable e) {
+						e.printStackTrace();
 					}
 				}
 			}

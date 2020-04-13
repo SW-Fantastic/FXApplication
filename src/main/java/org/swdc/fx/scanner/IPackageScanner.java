@@ -71,7 +71,7 @@ public interface IPackageScanner {
 	 * @param clazz 被扫描的类
 	 * @return
 	 */
-	public static IPackageScanner getScanner(Class<?> clazz) {
+	static IPackageScanner getScanner(Class<?> clazz) {
 		URL path = clazz.getProtectionDomain().getCodeSource().getLocation();
 		if(path.getProtocol().equals("file")) {
 			if (path.getPath().toLowerCase().endsWith("jar")) {
@@ -84,7 +84,7 @@ public interface IPackageScanner {
 		}
 	}
 	
-	public static IPackageScanner getScanner(String path) {
+	static IPackageScanner getScanner(String path) {
 		if (path.toLowerCase().endsWith("jar")) {
 			return new ArchivedScanner(path);
 		} else {

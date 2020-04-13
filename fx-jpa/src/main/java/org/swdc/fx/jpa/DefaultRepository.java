@@ -104,7 +104,11 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         for (int index = 0; index <params.length; index ++) {
             Param qParam = params[index].getAnnotation(Param.class);
             String name = qParam.value();
-            query.setParameter(name,args[index]);
+            if (qParam.searchBy()) {
+                query.setParameter(name,"%" + args[index] + "%");
+            } else {
+                query.setParameter(name,args[index]);
+            }
         }
         if (sqlQuery.firstResult() != -1) {
             query.setFirstResult(sqlQuery.firstResult());

@@ -77,7 +77,7 @@ public class FXTheme {
                     view.getStage()
                             .getScene()
                             .getRoot()
-                            .setStyle("-fx-background-image: url(" + background.toURI().toURL().toExternalForm() + ");");
+                            .setStyle("-fx-background-image: url(" + background.getAbsoluteFile().toURI().toURL().toExternalForm() + ");");
                 }
             } else {
                 ((Parent)view.getView())
