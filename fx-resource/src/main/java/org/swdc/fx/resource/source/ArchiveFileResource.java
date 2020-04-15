@@ -32,7 +32,11 @@ public class ArchiveFileResource implements Resource {
     }
 
     public static URI getVirtualURI(File file) {
-        return URI.create("jar:file:" + Paths.get(file.getAbsolutePath()).toUri().getPath());
+        try {
+            return URI.create("jar:" + file.getAbsoluteFile().toURI().toURL().toExternalForm());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static FileSystem createAFS(URI uri) throws IOException {
