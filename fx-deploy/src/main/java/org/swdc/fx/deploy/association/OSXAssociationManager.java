@@ -104,4 +104,43 @@ public class OSXAssociationManager implements AssociationManager {
         return false;
     }
 
+    @Override
+    public boolean removeAssociation(String extension) {
+        File root = new File("");
+        if (!root.getAbsolutePath().contains("app")) {
+            // 启动环境不是Application bundle，因此不会有info.plist
+            return false;
+        }
+
+        String parent = root.getAbsolutePath().split("[.]app")[0];
+        File bundleData = new File(parent + ".app/Contents/info.plist");
+        if (!bundleData.exists()) {
+            return false;
+        }
+        try {
+            NSDictionary data = (NSDictionary) PropertyListParser.parse(bundleData);
+            if (!data.containsKey("CFBundleDocumentTypes")) {
+                return false;
+            }
+            NSArray content = (NSArray) data.get("CFBundleDocumentTypes");
+            NSObject[] array = content.getArray();
+            if (array == null || array.length == 0) {
+                return false;
+            }
+            for (int idx = 0; idx < array.length; idx++) {
+                NSObject object = array[idx];
+                OSXFileAssociation association = new OSXFileAssociation((HashMap) object.toJavaObject());
+                if (association.getExtensions().contains(extension)) {
+                    content.remove(idx);
+                    data.put("CFBundleDocumentTypes", content);
+                    PropertyListParser.saveAsXML(data,bundleData);
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e){
+
+        }
+        return false;
+    }
 }

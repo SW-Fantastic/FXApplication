@@ -22,4 +22,6 @@ public interface AssociationManager {
 
     boolean writeAssociation(FileAssociation assocation);
 
+    boolean removeAssociation(String extension);
+
 }
