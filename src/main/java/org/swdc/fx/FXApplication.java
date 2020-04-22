@@ -20,11 +20,15 @@ import org.swdc.fx.properties.DefaultUIConfigProp;
 import org.swdc.fx.services.ServiceManager;
 import org.swdc.fx.util.Util;
 
+import java.awt.*;
+import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.OpenFilesHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -39,7 +43,7 @@ import java.util.stream.Collectors;
  * 信息，因此请在FXApplication的子类中标注SFXApplication注解。
  *
  */
-public abstract class FXApplication extends Application {
+public abstract class FXApplication extends Application implements OpenFilesHandler {
 
     private static final Object syncObject = new Object();
 
@@ -60,6 +64,10 @@ public abstract class FXApplication extends Application {
      */
     public void init() throws Exception {
         synchronized (syncObject) {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE)) {
+                Desktop.getDesktop().setOpenFileHandler(this);
+            }
+
             hasStopped = false;
             InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
             if (bannerInput == null) {
@@ -200,6 +208,26 @@ public abstract class FXApplication extends Application {
 
             }
         }
+    }
+
+    @Override
+    public void openFiles(OpenFilesEvent e) {
+        if (e.getFiles().size() == 1) {
+            this.onFileOpenRequest(e.getFiles().get(0));
+        } else {
+            for (File file: e.getFiles()) {
+                this.onFileOpenRequest(file);
+            }
+        }
+    }
+
+    /**
+     * 来自文件关联的处理，重写此方法以处理
+     * 被关联的文件的打开。
+     * @param file
+     */
+    public void onFileOpenRequest(File file) {
+
     }
 
     /**

@@ -5,8 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.FXApplication;
 import org.swdc.fx.net.data.ExternalMessage;
-import org.swdc.fx.util.Util;
+import org.swdc.fx.net.data.MainParameter;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -14,8 +15,6 @@ import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 public class ApplicationHandler implements CompletionHandler<AsynchronousSocketChannel,FXApplication> {
 
@@ -25,8 +24,11 @@ public class ApplicationHandler implements CompletionHandler<AsynchronousSocketC
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationHandler.class);
 
-    ApplicationHandler(AsynchronousServerSocketChannel serverSocketChannel) {
+    private FXApplication application;
+
+    ApplicationHandler(AsynchronousServerSocketChannel serverSocketChannel, FXApplication application) {
         this.serverSocket = serverSocketChannel;
+        this.application = application;
     }
 
     @Override
@@ -43,6 +45,17 @@ public class ApplicationHandler implements CompletionHandler<AsynchronousSocketC
             handlers.stream()
                     .filter(h ->h.support(clazz))
                     .forEach(h -> h.accept(attachment, message));
+            String name = System.getProperty("os.name");
+            if (name.toLowerCase().contains("win")) {
+                if (message instanceof MainParameter) {
+                    MainParameter mainParameter = (MainParameter)message;
+                    String path = mainParameter.getArgs()[0];
+                    File target = new File(path);
+                    if (target.exists()&&target.isFile()) {
+                        this.application.onFileOpenRequest(target);
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error("fail to resolve message: ",e);
         }

@@ -44,7 +44,7 @@ public class ApplicationService {
                     } else {
                         serverSocket = AsynchronousServerSocketChannel.open();
                         serverSocket.bind(new InetSocketAddress(port));
-                        this.applicationHandler = new ApplicationHandler(serverSocket);
+                        this.applicationHandler = new ApplicationHandler(serverSocket,application);
                         serverSocket.accept(application, this.applicationHandler);
                         return true;
                     }
@@ -52,7 +52,7 @@ public class ApplicationService {
                     try {
                         serverSocket = AsynchronousServerSocketChannel.open();
                         serverSocket.bind(new InetSocketAddress(port));
-                        this.applicationHandler = new ApplicationHandler(serverSocket);
+                        this.applicationHandler = new ApplicationHandler(serverSocket,application);
                         serverSocket.accept(application, this.applicationHandler);
                         return true;
                     } catch (Exception ex) {
@@ -62,7 +62,7 @@ public class ApplicationService {
             }
             serverSocket = AsynchronousServerSocketChannel.open();
             serverSocket.bind(new InetSocketAddress(0));
-            this.applicationHandler = new ApplicationHandler(serverSocket);
+            this.applicationHandler = new ApplicationHandler(serverSocket,application);
             serverSocket.accept(application, this.applicationHandler);
             InetSocketAddress address = (InetSocketAddress) serverSocket.getLocalAddress();
             port = address.getPort();

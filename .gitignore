@@ -10,3 +10,7 @@ fx-jpa/.idea
 fx-resource/fx-resource.iml
 fx-resource/target
 fx-resource/.idea
+/fx-deploy/native/windows/SystemSupport/x64/
+/fx-deploy/native/windows/SystemSupport/Debug/
+/fx-deploy/native/windows/SystemSupport/.vs/
+/fx-deploy/native/windows/SystemSupport/Release/
