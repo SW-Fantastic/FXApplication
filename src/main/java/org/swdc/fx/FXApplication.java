@@ -64,10 +64,6 @@ public abstract class FXApplication extends Application implements OpenFilesHand
      */
     public void init() throws Exception {
         synchronized (syncObject) {
-            if (Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE)) {
-                Desktop.getDesktop().setOpenFileHandler(this);
-            }
-
             hasStopped = false;
             InputStream bannerInput = this.getClass().getModule().getResourceAsStream("banner.txt");
             if (bannerInput == null) {
@@ -99,6 +95,9 @@ public abstract class FXApplication extends Application implements OpenFilesHand
                     System.exit(0);
                 }
                 service.addListener(new MainParamHandler());
+                if (Desktop.getDesktop().isSupported(Desktop.Action.APP_OPEN_FILE)) {
+                    Desktop.getDesktop().setOpenFileHandler(this);
+                }
             }
 
             configManager.setAssetsPath(application.assetsPath());

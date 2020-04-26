@@ -15,15 +15,17 @@ public class SystemSupportNative {
         try {
             String name = System.getProperty("os.name");
             String subFix = "";
+            String libName = "SystemSupport";
             File support = null;
             if (name.toLowerCase().contains("mac")) {
                 subFix = "dylib";
             } else if (name.toLowerCase().contains("windows")){
+                libName = "libSystemSupport";
                 subFix = "dll";
             } else if (name.toLowerCase().contains("linux")) {
                 subFix = "so";
             }
-            support = new File("libSystemSupport." + subFix);
+            support = new File(libName + "." + subFix);
             if (!support.exists()) {
                 Module module = SystemSupportNative.class.getModule();
                 Integer bit = Integer.valueOf(System.getProperty("sun.arch.data.model"));
@@ -32,7 +34,7 @@ public class SystemSupportNative {
                 in.transferTo(outputStream);
                 outputStream.close();
             }
-            System.loadLibrary("libSystemSupport");
+            System.loadLibrary(libName);
         } catch (Exception e) {
             logger.error("can not load native support lib",e);
         }
