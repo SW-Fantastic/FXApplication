@@ -1,0 +1,5 @@
+LIBRARY SystemSupport
+EXPORTS
+Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getProcessExecutablePath @1
+Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_stopProcess @2
+Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getRunningProcesses @3

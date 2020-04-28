@@ -2,10 +2,12 @@ package org.swdc.fx.deploy.system.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.swdc.fx.deploy.system.SystemProc;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.List;
 
 public class SystemSupportNative {
 
@@ -41,5 +43,9 @@ public class SystemSupportNative {
     }
 
     public static native String getProcessExecutablePath(long pid);
+
+    public static native List<SystemProc> getRunningProcesses();
+
+    public static native boolean stopProcess(long pid);
 
 }
