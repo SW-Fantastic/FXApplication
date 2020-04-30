@@ -15,6 +15,23 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getProcessExecutablePath
   (JNIEnv *, jclass, jlong);
 
+/*
+ * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+ * Method:    getRunningProcesses
+ * Signature: ()Ljava/util/List;
+ */
+JNIEXPORT jobject JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getRunningProcesses
+  (JNIEnv *, jclass);
+
+
+/*
+ * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+ * Method:    stopProcess
+ * Signature: (J)V
+ */
+JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_stopProcess
+  (JNIEnv *, jclass, jlong);
+
 #ifdef __cplusplus
 }
 #endif

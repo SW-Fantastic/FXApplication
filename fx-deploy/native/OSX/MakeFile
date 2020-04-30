@@ -1,0 +1,14 @@
+all: systemSupport
+
+systemSupport: SystemSupport_32.o SystemSupport_64.o
+	g++ SystemSupport_32.o -shared -m32 -fPIC -o libSystemSupport_32.dylib
+	g++ SystemSupport_64.o -shared -m64 -fPIC -o libSystemSupport_64.dylib
+
+SystemSupport_32.o:
+	g++ -m32 -c SystemSupport.cpp -o SystemSupport_32.o 
+
+SystemSupport_64.o:
+	g++ -m64 -c SystemSupport.cpp -o SystemSupport_64.o 
+
+clean:
+	rm -rf *.o
