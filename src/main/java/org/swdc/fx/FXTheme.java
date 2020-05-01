@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
 
 import java.io.File;
-
 /**
  * 主题，这个在DefaultProp里面进行配置
  * 资源文件默认会从Assets文件夹获取。
@@ -29,6 +28,8 @@ public class FXTheme {
         this.name = name;
         this.assetsPath = assetsPath;
 
+        File sha = new File(this.assetsPath + "/theme/" + this.name + "/.sha");
+
         File assets = new File(this.assetsPath + "/theme/" + this.name );
         File[] files = assets.listFiles();
         try {
@@ -36,11 +37,12 @@ public class FXTheme {
                 if (item.isFile() && item.getName().endsWith("less")) {
                     String cssName = item.getName().replace("less", "css");
                     File css = new File(item.getParent() + File.separator + cssName);
-                    if (!css.exists()) {
-                        LessEngine lessEngine = new LessEngine();
-                        lessEngine.compile(item,css);
-                        logger.info("compile style file :" + this.name);
+                    if (css.exists()) {
+                        css.delete();
                     }
+                    LessEngine lessEngine = new LessEngine();
+                    lessEngine.compile(item,css);
+                    logger.info("compile style file :" + this.name);
                 }
             }
         } catch (Exception ex) {
