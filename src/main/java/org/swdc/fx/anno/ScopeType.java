@@ -1,5 +1,6 @@
 package org.swdc.fx.anno;
 
+import org.swdc.fx.container.CacheScope;
 import org.swdc.fx.container.ComponentScope;
 import org.swdc.fx.container.SingletonScope;
 
@@ -20,7 +21,7 @@ public enum ScopeType {
     /**
      * 多实例，但是每一个实例都受控。
      */
-    CACHE(null);
+    CACHE(CacheScope.class);
 
     Class scopeType;
 

@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 /**
  * Application基类，
@@ -328,7 +329,7 @@ public abstract class FXApplication extends Application implements OpenFilesHand
     }
 
     public <T> T findComponent(Class<T> clazz) {
-        List<org.swdc.fx.container.Container> containerList = containers.listComponents();
+        List<Container> containerList = containers.listComponents();
         for (Container container: containerList) {
             if (container.isComponentOf(clazz)) {
                 return (T)container.getComponent(clazz);
@@ -340,6 +341,36 @@ public abstract class FXApplication extends Application implements OpenFilesHand
         for (ExtraModule module : modules) {
             if (module.isComponentOf(clazz)) {
                 return (T)module.getComponent(clazz);
+            }
+        }
+        return null;
+    }
+
+    public <T> T findScopedComponent(Class<T> clazz, Predicate<T> condition) {
+        List<Container> containerList = containers.listComponents();
+        Object target = null;
+        for (Container container: containerList) {
+            if (!container.isComponentOf(clazz)) {
+                continue;
+            }
+            target = container.findScopedComponent(clazz,condition);
+            if (target != null) {
+                return (T)target;
+            }
+        }
+        return null;
+    }
+
+    public <T> List<T> findAllScopedComponent(Class<T> clazz, Predicate<T> condition) {
+        List<Container> containerList = containers.listComponents();
+        List target = null;
+        for (Container container: containerList) {
+            if (!container.isComponentOf(clazz)) {
+                continue;
+            }
+            target = container.findAllScopedComponent(clazz,condition);
+            if (target != null) {
+                return target;
             }
         }
         return null;

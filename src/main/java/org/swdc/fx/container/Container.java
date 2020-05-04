@@ -227,6 +227,26 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         }
     }
 
+    public <R extends T> R findScopedComponent(Class<R> clazz, Predicate<R> condition) {
+        Scope scope = clazz.getAnnotation(Scope.class);
+        ScopeType type = scope == null ? ScopeType.SINGLE: scope.value();
+        ComponentScope componentScope = findScope(type);
+        if (componentScope != null) {
+            return (R)componentScope.get(condition);
+        }
+        return null;
+    }
+
+    public <R extends T> List<R> findAllScopedComponent(Class<R> clazz, Predicate<R> condition) {
+        Scope scope = clazz.getAnnotation(Scope.class);
+        ScopeType type = scope == null ? ScopeType.SINGLE: scope.value();
+        ComponentScope componentScope = findScope(type);
+        if (componentScope != null) {
+            return componentScope.list(condition);
+        }
+        return Collections.emptyList();
+    }
+
     @Override
     public ComponentScope findScope(ScopeType type) {
         for(ComponentScope scope: scopes) {
