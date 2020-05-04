@@ -1,4 +1,6 @@
-package org.swdc.fx;
+package org.swdc.fx.container;
+
+import org.swdc.fx.AppComponent;
 
 import java.lang.reflect.Constructor;
 

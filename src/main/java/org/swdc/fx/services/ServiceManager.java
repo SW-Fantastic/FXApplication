@@ -1,6 +1,6 @@
 package org.swdc.fx.services;
 
-import org.swdc.fx.Container;
+import org.swdc.fx.container.Container;
 import java.lang.reflect.Constructor;
 
 public class ServiceManager extends Container<Service> {

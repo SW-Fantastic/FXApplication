@@ -2,7 +2,6 @@ package org.swdc.fx.properties;
 
 import org.controlsfx.property.editor.PropertyEditor;
 import org.swdc.fx.AppComponent;
-import org.swdc.fx.anno.ConfigProp;
 import org.swdc.fx.anno.ConfigProperty;
 
 public class AbstractPropEditor {

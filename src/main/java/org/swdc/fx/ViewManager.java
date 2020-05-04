@@ -2,6 +2,8 @@ package org.swdc.fx;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 import org.swdc.fx.properties.ConfigManager;
 import org.swdc.fx.properties.DefaultUIConfigProp;
 
@@ -20,9 +22,9 @@ public class ViewManager extends Container<FXView> {
 
     @Override
     public void initialize() {
-        FXApplication application = ((ApplicationContainer)getScope()).getApplication();
+        FXApplication application = ((ApplicationContainer) getParent()).getApplication();
         icons = application.loadIcons();
-        ConfigManager configManager = getScope().getComponent(ConfigManager.class);
+        ConfigManager configManager = getParent().getComponent(ConfigManager.class);
         DefaultUIConfigProp prop = configManager.getOverrideableProperties(DefaultUIConfigProp.class);
         theme = new FXTheme(prop.getTheme(), configManager.getAssetsPath());
     }
@@ -35,7 +37,7 @@ public class ViewManager extends Container<FXView> {
                 throw new RuntimeException(" No Args constructor should be provided");
             }
             FXView view = (FXView) constructorNoArgs.newInstance();
-            view.setContainer((ApplicationContainer) this.getScope());
+            view.setContainer((ApplicationContainer) this.getParent());
             if (!view.loadFxmlView()) {
                 view.createView();
             } else {
@@ -45,7 +47,7 @@ public class ViewManager extends Container<FXView> {
                     if (controller != null && controller instanceof FXController) {
                         FXController fxController = (FXController) controller;
                         Class ctrlClazz = fxController.getClass();
-                        fxController.setContainer((ApplicationContainer) this.getScope());
+                        fxController.setContainer((ApplicationContainer) this.getParent());
                         if (ctrlClazz.getModule().isOpen(target.getPackageName(), FXApplication.class.getModule())) {
                             this.awareComponents(fxController);
                         }
@@ -84,8 +86,8 @@ public class ViewManager extends Container<FXView> {
                     fxController.destroy();
                 }
             }
-            fxView.destroy();
         }
+        super.destroy();
     }
 
     @Override

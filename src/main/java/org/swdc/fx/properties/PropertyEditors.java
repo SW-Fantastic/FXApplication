@@ -14,13 +14,11 @@ import org.controlsfx.property.editor.PropertyEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.AppComponent;
-import org.swdc.fx.FXView;
 import org.swdc.fx.anno.ConfigProp;
 import org.swdc.fx.anno.ConfigProperty;
 import org.swdc.fx.anno.PropResolver;
 import org.swdc.fx.extra.IconSPIService;
 
-import javax.swing.*;
 import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;

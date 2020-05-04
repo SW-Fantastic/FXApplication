@@ -3,6 +3,7 @@ package org.swdc.fx.resource;
 import javafx.scene.text.Font;
 import org.swdc.fx.*;
 import org.swdc.fx.anno.SFXApplication;
+import org.swdc.fx.container.ApplicationContainer;
 import org.swdc.fx.extra.ExtraModule;
 
 import java.io.File;

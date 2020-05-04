@@ -3,7 +3,6 @@ package org.swdc.fx.properties;
 import javafx.scene.Node;
 import org.controlsfx.control.PropertySheet;
 import org.swdc.fx.AppComponent;
-import org.swdc.fx.anno.Properties;
 
 public abstract class FXProperties extends AppComponent {
 

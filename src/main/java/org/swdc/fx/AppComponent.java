@@ -2,8 +2,13 @@ package org.swdc.fx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.swdc.fx.anno.Aware;
+import org.swdc.fx.FXTheme;
+import org.swdc.fx.FXView;
+import org.swdc.fx.LifeCircle;
+import org.swdc.fx.ViewManager;
 import org.swdc.fx.anno.SFXApplication;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 import org.swdc.fx.event.AppEvent;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
@@ -13,7 +18,6 @@ import org.swdc.fx.services.Service;
 import org.swdc.fx.services.ServiceManager;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

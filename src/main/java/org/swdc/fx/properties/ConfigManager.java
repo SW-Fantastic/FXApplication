@@ -1,5 +1,5 @@
 package org.swdc.fx.properties;
-import org.swdc.fx.Container;
+import org.swdc.fx.container.Container;
 import org.swdc.fx.anno.Properties;
 
 import java.util.HashMap;

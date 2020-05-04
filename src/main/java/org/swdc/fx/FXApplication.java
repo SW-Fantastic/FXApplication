@@ -8,6 +8,8 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.SFXApplication;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 import org.swdc.fx.event.AppEvent;
 import org.swdc.fx.net.data.MainParameter;
 import org.swdc.fx.extra.ExtraManager;
@@ -26,11 +28,9 @@ import java.awt.desktop.OpenFilesHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * Application基类，
@@ -328,7 +328,7 @@ public abstract class FXApplication extends Application implements OpenFilesHand
     }
 
     public <T> T findComponent(Class<T> clazz) {
-        List<Container> containerList = containers.listComponents();
+        List<org.swdc.fx.container.Container> containerList = containers.listComponents();
         for (Container container: containerList) {
             if (container.isComponentOf(clazz)) {
                 return (T)container.getComponent(clazz);

@@ -2,6 +2,8 @@ package org.swdc.fx.event;
 
 import org.swdc.fx.AppComponent;
 import org.swdc.fx.anno.Listener;
+import org.swdc.fx.container.ComponentScope;
+import org.swdc.fx.event.EventListener.*;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
 
@@ -9,10 +11,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class EventPublisher {
+public abstract class EventPublisher {
 
     private HashMap<Class, List<EventListener>> listeners = new HashMap<>();
 
@@ -48,12 +48,79 @@ public class EventPublisher {
     }
 
     private void handlerListeners(Class event, Method method, AppComponent component) {
-        List<EventListener> listeners = this.listeners.get(event);
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        Class clazz = component.getClass();
+        Scope scope = (Scope) clazz.getAnnotation(Scope.class);
+        ScopeType type = scope == null ? ScopeType.SINGLE : scope.value();
+        ComponentScope componentScope = findScope(type);
+        if (componentScope == null) {
+            return;
         }
-        listeners.add(EventListener.createListener(method,component));
-        this.listeners.put(event,listeners);
+        if (componentScope.singleton()) {
+            List<EventListener> listeners = this.listeners.get(event);
+            if (listeners == null) {
+                listeners = new ArrayList<>();
+            }
+            listeners.add(EventListener.createListener(method,component));
+            this.listeners.put(event,listeners);
+        } else {
+            List<EventListener> listeners = this.listeners.get(event);
+            ProxyMultiTargetListener listenerItem = null;
+            if (listeners != null) {
+                for (EventListener listener : listeners) {
+                    if (listener instanceof EventListener.ProxyMultiTargetListener) {
+                        ProxyMultiTargetListener item = (ProxyMultiTargetListener) listener;
+                        if (listenerItem.getTargetClazz() == clazz) {
+                            listenerItem = item;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (listeners == null) {
+                listeners = new ArrayList<>();
+                this.listeners.put(clazz,listeners);
+            }
+            listeners.add(listenerItem);
+            listenerItem.addTarget(component);
+        }
     }
+
+    public void removeListener(AppComponent component) {
+        Class clazz = component.getClass();
+        Scope scope = (Scope)clazz.getAnnotation(Scope.class);
+        ScopeType type = scope == null ? ScopeType.SINGLE : scope.value();
+        ComponentScope componentScope = findScope(type);
+        if (componentScope == null) {
+            return;
+        }
+        if (componentScope.singleton()) {
+            this.listeners.remove(component.getClass());
+        } else {
+
+            ProxyMultiTargetListener listenerItem = null;
+            List<EventListener> listeners = this.listeners.get(component.getClass());
+
+            if (listeners == null) {
+                return;
+            }
+
+            for (EventListener listener : listeners) {
+                if (listener instanceof EventListener.ProxyMultiTargetListener) {
+                    ProxyMultiTargetListener item = (ProxyMultiTargetListener) listener;
+                    if (listenerItem.getTargetClazz() == clazz) {
+                        listenerItem = item;
+                    }
+                    break;
+                }
+            }
+            if (listenerItem == null) {
+                return;
+            }
+            listenerItem.removeTarget(component);
+        }
+
+    }
+
+    protected abstract ComponentScope findScope(ScopeType type);
 
 }

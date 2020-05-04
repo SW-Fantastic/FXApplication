@@ -9,7 +9,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -33,7 +32,7 @@ import java.util.Optional;
  * 如果找不到FXML，将会尝试使用create方法创建view，请在此方法返回Parent。
  *
  */
-public class FXView extends AppComponent{
+public class FXView extends AppComponent {
 
     private Stage stage;
 

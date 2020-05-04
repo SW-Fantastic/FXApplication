@@ -1,7 +1,7 @@
 package org.swdc.fx.jpa;
 
-import org.swdc.fx.ApplicationContainer;
-import org.swdc.fx.Container;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.scanner.IPackageScanner;
 

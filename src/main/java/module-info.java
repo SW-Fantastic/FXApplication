@@ -18,6 +18,7 @@ module fx.framework.core {
     exports org.swdc.fx.event;
     exports org.swdc.fx.scanner;
     exports org.swdc.fx.net.data;
+    exports org.swdc.fx.container;
 
     uses org.swdc.fx.extra.IconSPIService;
 }

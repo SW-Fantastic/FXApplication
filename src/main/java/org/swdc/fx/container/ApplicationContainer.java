@@ -1,10 +1,9 @@
-package org.swdc.fx;
+package org.swdc.fx.container;
 
+import org.swdc.fx.FXApplication;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -27,7 +26,7 @@ public class ApplicationContainer extends Container<Container> {
     protected Container instance(Class clazz) {
         try {
             Container container = (Container) clazz.getConstructor().newInstance();
-            container.setScope(this);
+            container.setParent(this);
 
             if (clazz != ExtraManager.class) {
                 ExtraManager extraManager = getComponent(ExtraManager.class);

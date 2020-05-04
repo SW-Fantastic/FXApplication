@@ -1,7 +1,10 @@
-package org.swdc.fx;
+package org.swdc.fx.container;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.swdc.fx.AppComponent;
+import org.swdc.fx.FXApplication;
+import org.swdc.fx.LifeCircle;
 import org.swdc.fx.anno.Aware;
 import org.swdc.fx.anno.Scope;
 import org.swdc.fx.anno.ScopeType;
@@ -11,22 +14,20 @@ import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * 容器，管理各类资源的那种。
  * @param <T>
  */
-public abstract class Container<T> extends EventPublisher implements LifeCircle{
+public abstract class Container<T> extends EventPublisher implements LifeCircle {
 
     /**
      * 父容器，一般在创建的时候会指定。
      * ApplicationContainer的父容器为null
      */
-    private Container<Container> scope;
+    private Container<Container> parent;
 
     /**
      * 拓展注册表，对本容器可用的拓展模块会在这里出现
@@ -35,16 +36,20 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
 
     private HashMap<Class, Object> components = new HashMap<>();
 
+    private Map<Class, List<Object>> caches = new HashMap<>();
+
+    private Set<ComponentScope<T>> scopes = new HashSet<>();
+
     /**
      * 返回父容器
      * @return
      */
-    public Container<Container> getScope() {
-        return scope;
+    public Container<Container> getParent() {
+        return parent;
     }
 
-    protected void setScope(Container<Container> scope) {
-        this.scope = scope;
+    protected void setParent(Container<Container> parent) {
+        this.parent = parent;
     }
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -59,8 +64,25 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
         if (!isComponentOf(clazz)) {
             return null;
         }
-        if (components.containsKey(clazz)) {
-            return (R)components.get(clazz);
+        Scope scope = clazz.getAnnotation(Scope.class);
+        ScopeType scopeType = scope == null ? ScopeType.SINGLE :scope.value();
+        for (ComponentScope componentScope: scopes) {
+            if (scopeType != componentScope.getType()) {
+                continue;
+            }
+            if (componentScope.singleton()) {
+                R target = (R)componentScope.getDefault(clazz);
+                if (target != null) {
+                    return target;
+                }
+            } else {
+                Predicate condition = comp -> comp.getClass().equals(clazz) ||
+                        comp.getClass().isAssignableFrom(clazz);
+                Object result = componentScope.get(condition);
+                if (result != null) {
+                    return (R)result;
+                }
+            }
         }
         return (R)register(clazz);
     }
@@ -75,72 +97,93 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
         if (!isComponentOf(clazz)) {
             return null;
         }
-        if (components.containsKey(clazz)) {
-            return (R)components.get(clazz);
-        }
-        for (Class item : components.keySet()) {
-            if (clazz.isAssignableFrom(item)){
-                return (R)components.get(item);
+
+        Scope scope = clazz.getAnnotation(Scope.class);
+        ScopeType type = scope == null ? ScopeType.SINGLE : scope.value();
+
+        ComponentScope compScope = findScope(type);
+        if (compScope != null) {
+            if (compScope.singleton()) {
+                Object result = compScope.getDefault(clazz);
+                if (result != null) {
+                    return (R)result;
+                }
+            } else {
+                Predicate condition = comp -> comp.getClass().equals(clazz) ||
+                        comp.getClass().isAssignableFrom(clazz);
+                Object result = compScope.get(condition);
+                if (result != null) {
+                    return (R)result;
+                }
             }
         }
-        Object target = instance(clazz);
 
-        if (!(this instanceof ExtraModule) && !(this instanceof ApplicationContainer)) {
-            if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
-                if (target instanceof AppComponent) {
-                    AppComponent appComponent = AppComponent.class.cast(target);
-                    appComponent.setContainer((ApplicationContainer)this.getScope());
-                    this.awareComponents((AppComponent) target);
-                    Scope scope = clazz.getAnnotation(Scope.class);
-                    // 只有单例对象可以监听
-                    if (scope == null || scope.value() == ScopeType.SINGLE) {
-                        registerEventHandler(appComponent);
+
+        try {
+            boolean scopeAvailable = type.getScopeType() != null;
+            if (scopeAvailable && compScope == null) {
+                compScope = (ComponentScope) type.getScopeType().getConstructor().newInstance();
+                scopes.add(compScope);
+            }
+            Object target = instance(clazz);
+            if (!(this instanceof ExtraModule) && !(this instanceof ApplicationContainer)) {
+                if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
+                    if (target instanceof AppComponent) {
+                        AppComponent appComponent = AppComponent.class.cast(target);
+                        appComponent.setContainer((ApplicationContainer)this.getParent());
+                        this.awareComponents((AppComponent) target);
+                        if (scopeAvailable && compScope.eventListenable()) {
+                            registerEventHandler(appComponent);
+                        }
                     }
                 }
             }
             if (target instanceof AppComponent) {
                 target = this.activeExtras(target);
             }
-        }
-
-        if (target instanceof LifeCircle) {
-            LifeCircle.class.cast(target).initialize();
-        }
-
-        Scope scope = clazz.getAnnotation(Scope.class);
-        if (scope != null && scope.value() != ScopeType.SINGLE) {
+            if (target instanceof LifeCircle) {
+                LifeCircle.class.cast(target).initialize();
+            }
+            if (scopeAvailable) {
+                compScope.put(clazz, target);
+            }
             return (R)target;
+        } catch (Exception e) {
+            logger.error("fail to create component ", e);
+            return null;
         }
-        components.put(clazz, target);
-        return (R)target;
     }
 
     protected List<Class> getRegisteredClass() {
-        return new ArrayList<>(components.keySet());
+        List<Class> classList = new ArrayList<>();
+        for (ComponentScope scope: scopes) {
+            classList.addAll(scope.getAllClasses());
+        }
+        return classList;
     }
 
     @Override
     public void registerEventHandler(AppComponent component) {
-        Container container = getScope();
+        Container container = getParent();
         if (container == null){
             super.registerEventHandler(component);
             return;
         }
-        while (container.getScope() != null){
-            container = container.getScope();
+        while (container.getParent() != null){
+            container = container.getParent();
         }
         container.registerEventHandler(component);
     }
 
     @Override
     public <T extends AppEvent> void emit(T event) {
-        Container container = getScope();
+        Container container = getParent();
         if(container == null) {
             super.emit(event);
             return;
         }
-        while (container.getScope() != null){
-            container = container.getScope();
+        while (container.getParent() != null){
+            container = container.getParent();
         }
         container.emit(event);
     }
@@ -158,7 +201,11 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
      * @return
      */
     public List listComponents() {
-        return components.values().stream().collect(Collectors.toList());
+        List<Object> components = new ArrayList<>();
+        for (ComponentScope scope: scopes) {
+            components.addAll(scope.listAll());
+        }
+        return components;
     }
 
     public abstract boolean isComponentOf(Class clazz);
@@ -178,6 +225,16 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
         if (module.support(this.getClass())) {
             this.extraMap.put(module.getClass(),module);
         }
+    }
+
+    @Override
+    public ComponentScope findScope(ScopeType type) {
+        for(ComponentScope scope: scopes) {
+            if (scope.getType() == type){
+                return scope;
+            }
+        }
+        return null;
     }
 
     /**
@@ -231,8 +288,12 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle{
                 LifeCircle target = (LifeCircle)object;
                 target.destroy();
             }
+            if (object instanceof AppComponent) {
+                removeListener((AppComponent)object);
+            }
         }
     }
+
 
     public void awareComponents(AppComponent component) {
         try {

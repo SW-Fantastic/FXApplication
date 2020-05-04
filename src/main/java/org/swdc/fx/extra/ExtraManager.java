@@ -1,11 +1,7 @@
 package org.swdc.fx.extra;
 
-import org.swdc.fx.ApplicationContainer;
-import org.swdc.fx.Container;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 
 /**
  * 拓展模块的容器
@@ -15,10 +11,10 @@ public class ExtraManager extends Container<ExtraModule> {
     @Override
     protected <R extends ExtraModule> R instance(Class<R> clazz) {
         try {
-            ApplicationContainer container = (ApplicationContainer)this.getScope();
+            ApplicationContainer container = (ApplicationContainer)this.getParent();
 
             ExtraModule module = clazz.getConstructor().newInstance();
-            module.setScope(this);
+            module.setParent(this);
             module.initialize(container);
             module.initialize();
             for (Object containerItem: container.listComponents()) {
@@ -37,7 +33,7 @@ public class ExtraManager extends Container<ExtraModule> {
 
     public <R extends ExtraModule> void unRegister(Class<R> clazz) {
         ExtraModule extraModule = this.getComponent(clazz);
-        ApplicationContainer container = (ApplicationContainer)this.getScope();
+        ApplicationContainer container = (ApplicationContainer)this.getParent();
         for (Object containerItem : container.listComponents()) {
             if (extraModule.support(containerItem.getClass())) {
                 Container subContainer = (Container)containerItem;

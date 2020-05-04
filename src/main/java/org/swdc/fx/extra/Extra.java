@@ -1,7 +1,7 @@
 package org.swdc.fx.extra;
 
-import org.swdc.fx.ApplicationContainer;
-import org.swdc.fx.Container;
+import org.swdc.fx.container.ApplicationContainer;
+import org.swdc.fx.container.Container;
 
 public interface Extra<R> {
 
