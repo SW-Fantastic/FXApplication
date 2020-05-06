@@ -40,7 +40,7 @@ public class ApplicationContainer extends Container<Container> {
 
             return container;
         } catch (Exception ex) {
-            logger.error("fail to construct container: " + clazz);
+            logger.error("fail to construct container: " + clazz,ex);
             return null;
         }
     }

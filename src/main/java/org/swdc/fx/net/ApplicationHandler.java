@@ -1,6 +1,7 @@
 package org.swdc.fx.net;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.FXApplication;
@@ -44,7 +45,7 @@ public class ApplicationHandler implements CompletionHandler<AsynchronousSocketC
             Object message = mapper.readValue(externalMessage.getData(), clazz);
             handlers.stream()
                     .filter(h ->h.support(clazz))
-                    .forEach(h -> h.accept(attachment, message));
+                    .forEach(h -> Platform.runLater(() -> h.accept(attachment, message)));
             String name = System.getProperty("os.name");
             if (name.toLowerCase().contains("win")) {
                 if (message instanceof MainParameter) {
@@ -52,7 +53,7 @@ public class ApplicationHandler implements CompletionHandler<AsynchronousSocketC
                     String path = mainParameter.getArgs()[0];
                     File target = new File(path);
                     if (target.exists()&&target.isFile()) {
-                        this.application.onFileOpenRequest(target);
+                        Platform.runLater(() -> this.application.onFileOpenRequest(target));
                     }
                 }
             }

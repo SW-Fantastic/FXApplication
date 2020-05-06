@@ -174,6 +174,14 @@ public abstract class FXApplication extends Application implements OpenFilesHand
                     splash.getStage().close();
                 }
                 this.appHasStarted(view);
+                List<String> params = this.getParameters().getUnnamed();
+                if (params.size() > 0) {
+                    String path = params.get(0);
+                    File file = new File(path);
+                    if (file.isFile() && file.exists()) {
+                        this.onFileOpenRequest(file);
+                    }
+                }
             });
         });
     }
