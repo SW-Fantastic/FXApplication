@@ -13,8 +13,8 @@ public class CacheScope<T> implements ComponentScope<T> {
     private Map<Class, List<Object>> cache = new HashMap<>();
 
     @Override
-    public Object getDefault(Class clazz) {
-        return cache.containsKey(clazz) ? cache.get(clazz).get(0):null;
+    public Object get(Class clazz) {
+        return null;
     }
 
     @Override

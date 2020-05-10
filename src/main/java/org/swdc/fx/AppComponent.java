@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * 作为组件的基类使用，提供各种获取组件的方法。
@@ -59,6 +60,35 @@ public class AppComponent implements LifeCircle {
         return viewManager.getTheme();
     }
 
+    /**
+     * 最重要的是Scope为Cache的时候的组件，
+     * 关于这种组件只能使用此方法获取。
+     * @param clazz 目标组件的类
+     * @param condition 条件
+     * @param <T> 类泛型
+     * @return 组件对象
+     */
+    public <T> T findExistedComponent(Class<T> clazz, Predicate<T> condition) {
+        List<Container> containers = container.listComponents();
+        Container container = null;
+        for (Container containerItem: containers) {
+            if (containerItem.isComponentOf(clazz)) {
+                container = containerItem;
+                break;
+            }
+        }
+        List<Object> target = container.listComponents();
+        for (Object item : target) {
+            try {
+                if (condition.test((T)item)) {
+                    return (T)item;
+                }
+            } catch (ClassCastException ignored) {
+            }
+        }
+        return null;
+    }
+
     public <T> T findExtraComponent(Class<? extends ExtraModule> extra, Class<T> compClazz) {
         ExtraManager manager = container.getComponent(ExtraManager.class);
         ExtraModule module = manager.getComponent(extra);
@@ -69,6 +99,13 @@ public class AppComponent implements LifeCircle {
         }
     }
 
+    /**
+     * 查找组件，除了single的组件之外，都是新建的组件。
+     * single组件会直接返回已有的单例实例。
+     * @param clazz 组件类
+     * @param <T> 组件泛型
+     * @return
+     */
     public <T> T findComponent(Class<T> clazz) {
         List<Container> containers = container.listComponents();
         for (Container container: containers) {

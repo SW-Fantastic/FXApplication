@@ -34,10 +34,6 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
      */
     private HashMap<Class, ExtraModule> extraMap = new HashMap<>();
 
-    private HashMap<Class, Object> components = new HashMap<>();
-
-    private Map<Class, List<Object>> caches = new HashMap<>();
-
     private Set<ComponentScope<T>> scopes = new HashSet<>();
 
     /**
@@ -70,18 +66,9 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
             if (scopeType != componentScope.getType()) {
                 continue;
             }
-            if (componentScope.singleton()) {
-                R target = (R)componentScope.getDefault(clazz);
-                if (target != null) {
-                    return target;
-                }
-            } else {
-                Predicate condition = comp -> comp.getClass().equals(clazz) ||
-                        comp.getClass().isAssignableFrom(clazz);
-                Object result = componentScope.get(condition);
-                if (result != null) {
-                    return (R)result;
-                }
+            R target = (R)componentScope.get(clazz);
+            if (target != null) {
+                return target;
             }
         }
         return (R)register(clazz);
@@ -103,21 +90,11 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
 
         ComponentScope compScope = findScope(type);
         if (compScope != null) {
-            if (compScope.singleton()) {
-                Object result = compScope.getDefault(clazz);
-                if (result != null) {
-                    return (R)result;
-                }
-            } else {
-                Predicate condition = comp -> comp.getClass().equals(clazz) ||
-                        comp.getClass().isAssignableFrom(clazz);
-                Object result = compScope.get(condition);
-                if (result != null) {
-                    return (R)result;
-                }
+            Object result = compScope.get(clazz);
+            if (result != null) {
+                return (R)result;
             }
         }
-
 
         try {
             boolean scopeAvailable = type.getScopeType() != null;
@@ -156,7 +133,7 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
 
     protected List<Class> getRegisteredClass() {
         List<Class> classList = new ArrayList<>();
-        for (ComponentScope scope: scopes) {
+        for (ComponentScope scope : scopes) {
             classList.addAll(scope.getAllClasses());
         }
         return classList;
@@ -225,16 +202,6 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         if (module.support(this.getClass())) {
             this.extraMap.put(module.getClass(),module);
         }
-    }
-
-    public <R extends T> R findScopedComponent(Class<R> clazz, Predicate<R> condition) {
-        Scope scope = clazz.getAnnotation(Scope.class);
-        ScopeType type = scope == null ? ScopeType.SINGLE: scope.value();
-        ComponentScope componentScope = findScope(type);
-        if (componentScope != null) {
-            return (R)componentScope.get(condition);
-        }
-        return null;
     }
 
     public <R extends T> List<R> findAllScopedComponent(Class<R> clazz, Predicate<R> condition) {

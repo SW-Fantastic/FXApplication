@@ -20,6 +20,7 @@ public enum ScopeType {
 
     /**
      * 多实例，但是每一个实例都受控。
+     * 必须使用findExisted才能得到已创建的这种对象。
      */
     CACHE(CacheScope.class);
 

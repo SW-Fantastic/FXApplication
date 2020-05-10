@@ -8,16 +8,7 @@ import java.util.function.Predicate;
 
 public interface ComponentScope<T> {
 
-    default Object get(Predicate condition) {
-        for (Object item: listAll()) {
-            if (condition.test(item)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    Object getDefault(Class clazz);
+    Object get(Class clazz);
 
     List listAll();
 

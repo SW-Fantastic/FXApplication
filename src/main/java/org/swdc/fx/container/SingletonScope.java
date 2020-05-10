@@ -35,7 +35,7 @@ public class SingletonScope<T extends AppComponent> implements ComponentScope<T 
     }
 
     @Override
-    public Object getDefault(Class clazz) {
+    public Object get(Class clazz) {
         if (!components.containsKey(clazz)) {
             return null;
         }

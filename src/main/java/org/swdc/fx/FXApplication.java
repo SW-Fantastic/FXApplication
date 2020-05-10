@@ -300,6 +300,23 @@ public abstract class FXApplication extends Application implements OpenFilesHand
         }
     }
 
+    public <T> List<T> getScoped(Class<T> scopeClazz) {
+        List<Container> containers = this.containers.listComponents();
+        for (Container container: containers) {
+            if (container.isComponentOf(scopeClazz)) {
+                List<Object> content = container.listComponents();
+                List<T> result = new ArrayList<>();
+                for (Object comp: content){
+                    if (scopeClazz.isAssignableFrom(comp.getClass())) {
+                        result.add((T)comp);
+                    }
+                }
+                return result;
+            }
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * 启动的时候调用，这里可以注入自己的Properties，
      * 也可以修改默认的Properties等，这个时候Application
@@ -354,16 +371,30 @@ public abstract class FXApplication extends Application implements OpenFilesHand
         return null;
     }
 
-    public <T> T findScopedComponent(Class<T> clazz, Predicate<T> condition) {
-        List<Container> containerList = containers.listComponents();
-        Object target = null;
-        for (Container container: containerList) {
-            if (!container.isComponentOf(clazz)) {
-                continue;
+    /**
+     * 最重要的是Scope为Cache的时候的组件，
+     * 关于这种组件只能使用此方法获取。
+     * @param clazz 目标组件的类
+     * @param condition 条件
+     * @param <T> 类泛型
+     * @return 组件对象
+     */
+    public <T> T findExistedComponent(Class<T> clazz, Predicate<T> condition) {
+        List<Container> containers = this.containers.listComponents();
+        Container container = null;
+        for (Container containerItem: containers) {
+            if (containerItem.isComponentOf(clazz)) {
+                container = containerItem;
+                break;
             }
-            target = container.findScopedComponent(clazz,condition);
-            if (target != null) {
-                return (T)target;
+        }
+        List<Object> target = container.listComponents();
+        for (Object item : target) {
+            try {
+                if (condition.test((T)item)) {
+                    return (T)item;
+                }
+            } catch (ClassCastException ignored) {
             }
         }
         return null;
