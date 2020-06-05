@@ -5,10 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -235,6 +232,13 @@ public class FXView extends AppComponent {
                 }
             }
             return null;
+        } else if (parent instanceof ScrollPane) {
+          ScrollPane scrollPane = (ScrollPane)parent;
+          if (scrollPane.getContent().getId().equals(id)) {
+              return (T)scrollPane.getContent();
+          } else {
+              return findById(id,scrollPane.getContent());
+          }
         } else if (parent instanceof Pane) {
             Pane pane = (Pane)parent;
             for (Node node: pane.getChildren()) {
