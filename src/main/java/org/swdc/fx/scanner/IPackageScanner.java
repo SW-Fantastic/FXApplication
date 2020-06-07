@@ -4,6 +4,10 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.List;
 
+/**
+ * 类扫描器接口
+ * 扫描jar包内部或者文件系统，获取他的class
+ */
 public interface IPackageScanner {
 
 	/**
@@ -19,6 +23,11 @@ public interface IPackageScanner {
 	 */
 	List<Class<?>> scanAnnotation(Class<?> annotationClazz);
 
+	/**
+	 * 扫描子类
+	 * @param parent 父类
+	 * @return 子类列表
+	 */
 	List<Class<?>> scanSubClass(Class<?> parent);
 	
 	/**
@@ -83,7 +92,12 @@ public interface IPackageScanner {
 			return new ArchivedScanner(clazz);
 		}
 	}
-	
+
+	/**
+	 * 根据Path获取可用的Scanner
+	 * @param path 路径
+	 * @return 扫描器实例
+	 */
 	static IPackageScanner getScanner(String path) {
 		if (path.toLowerCase().endsWith("jar")) {
 			return new ArchivedScanner(path);
@@ -91,7 +105,13 @@ public interface IPackageScanner {
 			return new FileSystemScanner(path);
 		}
 	}
-	
+
+	/**
+	 * 是否是一个可被扫描的类。
+	 * class不应该为注解，接口，抽象类。
+	 * @param clazz 被验证的类
+	 * @return 是否可用
+	 */
 	static boolean isValidClass(Class<?> clazz) {
 		if (clazz.isAnnotation()) {
 			return false;

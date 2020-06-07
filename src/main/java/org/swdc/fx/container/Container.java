@@ -34,6 +34,9 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
      */
     private HashMap<Class, ExtraModule> extraMap = new HashMap<>();
 
+    /**
+     * Scope列表
+     */
     private Set<ComponentScope<T>> scopes = new HashSet<>();
 
     /**
@@ -131,6 +134,10 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         }
     }
 
+    /**
+     * 获取已注册的所有classes
+     * @return 已注册的class列表
+     */
     protected List<Class> getRegisteredClass() {
         List<Class> classList = new ArrayList<>();
         for (ComponentScope scope : scopes) {
@@ -139,6 +146,12 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         return classList;
     }
 
+    /**
+     * 注册事件的监听。
+     * 内部使用，不公开。
+     * container继承了eventPublisher。
+     * @param component
+     */
     @Override
     public void registerEventHandler(AppComponent component) {
         Container container = getParent();
@@ -152,6 +165,11 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         container.registerEventHandler(component);
     }
 
+    /**
+     * 发布事件，事件会被监听到。
+     * @param event 事件
+     * @param <T> 事件类型
+     */
     @Override
     public <T extends AppEvent> void emit(T event) {
         Container container = getParent();
@@ -185,6 +203,11 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         return components;
     }
 
+    /**
+     * 此类是否为本容器管理的类型。
+     * @param clazz 类
+     * @return 是否为本容器的组件类。
+     */
     public abstract boolean isComponentOf(Class clazz);
 
     /**
@@ -204,6 +227,13 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         }
     }
 
+    /**
+     * 按照一定条件在scope查找对象。
+     * @param clazz 对象的类
+     * @param condition 条件
+     * @param <R> 类的泛型
+     * @return 找到的对象或null
+     */
     public <R extends T> List<R> findAllScopedComponent(Class<R> clazz, Predicate<R> condition) {
         Scope scope = clazz.getAnnotation(Scope.class);
         ScopeType type = scope == null ? ScopeType.SINGLE: scope.value();
@@ -214,6 +244,11 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         return Collections.emptyList();
     }
 
+    /**
+     * 获取一个存储对象的scope
+     * @param type scope的类型
+     * @return scope
+     */
     @Override
     public ComponentScope findScope(ScopeType type) {
         for(ComponentScope scope: scopes) {
@@ -281,7 +316,10 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         }
     }
 
-
+    /**
+     * 装配此组件的依赖。
+     * @param component 组件
+     */
     public void awareComponents(AppComponent component) {
         try {
             Class clazz = component.getClass();

@@ -46,16 +46,28 @@ import java.util.function.Predicate;
  */
 public abstract class FXApplication extends Application implements OpenFilesHandler {
 
+    /**
+     * 同步对象，需要同步的时候充当锁使用
+     */
     private static final Object syncObject = new Object();
 
+    /**
+     * 应用主容器
+     */
     private ApplicationContainer containers;
 
+    /**
+     * 闪屏界面
+     */
     private FXSplash splash;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Boolean hasStopped = true;
 
+    /**
+     * 应用服务，将会用来单例启动、
+     */
     private ApplicationService service;
 
     /**

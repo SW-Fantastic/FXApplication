@@ -12,24 +12,31 @@
 
 ## 模块
 
-1. fx.framework.core
+#### 核心模块： fx.framework.core
 
-基础模块，各种类的容器，Application基类以及注解等都在这。
+基础模块，各种类的容器，Application基类以及注解等都在这，整体的启动代码，系统的启动和
+关闭流程，生命周期等。
 
-2. fx.framework.jpa
+#### 拓展模块： fx.framework.jpa
 
 数据库支持，仿照Spring的JpaRepository接口的数据库操作。
 当然是没有那种基于方法名的查询，总感觉那个做起来很麻烦。
 
 默认h2数据库
 
-3. fx.framework.resource
+#### 拓展模块： fx.framework.resource
 
 资源支持，统一的资源接口，支持从classPath，File，ModulePath
 压缩文件直接提取数据。
 
 对了，这个拓展会自动加载字体，以及当前theme的字体，内签了
 Fontawesome和MaterialIcons两套字体图标。
+
+有bug。
+
+#### 拓展模块：fx.framework.deploy
+
+系统集成，支持mac和windows，提供了进程操作api和文件关联。
 
 ## 测试
 没写，没时间，以后加。
