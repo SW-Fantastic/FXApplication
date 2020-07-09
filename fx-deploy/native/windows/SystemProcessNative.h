@@ -31,6 +31,22 @@ extern "C" {
     JNIEXPORT jstring JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getProcessExecutablePath
     (JNIEnv*, jclass, jlong);
 
+    /*
+     * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+     * Method:    installSystemModule
+     * Signature: (J)Ljava/lang/Boolean;
+     */
+    JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_installSystemModule
+    (JNIEnv*, jclass, jstring);
+
+    /*
+     * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+     * Method:    uninstallSystemModule
+     * Signature: (J)Ljava/lang/Boolean;
+     */
+    JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_uninstallSystemModule
+    (JNIEnv*, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

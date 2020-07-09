@@ -4,14 +4,17 @@
 #include<Windows.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
+#include <tchar.h>
 
 jstring w2js(JNIEnv* env, wchar_t* src);
+wchar_t* js2w(JNIEnv* env, jstring str);
 
 
 /*
  * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
- * Method:    stopProcess
+ * Method:    getRunningProcesses
  * Signature: (J)Z
+ * 获取运行中的进程列表
  */
 JNIEXPORT jobject JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getRunningProcesses
 (JNIEnv* env, jclass clazz) {
@@ -70,6 +73,7 @@ JNIEXPORT jobject JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNativ
  * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
  * Method:    stopProcess
  * Signature: (J)Z
+ * 停止指定的pid对应的进程
  */
 JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_stopProcess
 (JNIEnv* env, jclass clazz, jlong processId) {
@@ -87,6 +91,7 @@ JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNati
  * Class:     org_swdc_fx_deploy_system_impl_SystemProcessNative
  * Method:    getProcessExecutablePath
  * Signature: (J)Ljava/lang/String;
+ * 获取此pid进程对应的可执行文件的路径
  */
 JNIEXPORT jstring JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_getProcessExecutablePath
 (JNIEnv* env, jclass clazz, jlong procId) {
@@ -100,6 +105,60 @@ JNIEXPORT jstring JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNativ
         return jstring(NULL);
     }
     return w2js(env, ProcessName);
+}
+
+/*
+   * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+   * Method:    uninstallSystemModule
+   * Signature: (J)Ljava/lang/Boolean;
+   * 从系统中移除此模块的注册信息（DLLRegsvr服务）
+   */
+JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_uninstallSystemModule
+(JNIEnv* env, jclass clazz, jstring path) {
+	if (path == NULL) {
+		return false;
+	}
+	const wchar_t* wPath = js2w(env, path);
+	HINSTANCE moduleInstance = LoadLibrary(wPath);
+	delete wPath;
+	if (moduleInstance == NULL) {
+		FreeLibrary(moduleInstance);
+		return false;
+	}
+	FARPROC dllEntryPoint = GetProcAddress(moduleInstance, "DllUnregisterServer");
+	if (dllEntryPoint != NULL && S_OK == (*dllEntryPoint)()) {
+		FreeLibrary(moduleInstance);
+		return true;
+	}
+	FreeLibrary(moduleInstance);
+	return false;
+}
+
+/*
+   * Class:     org_swdc_fx_deploy_system_impl_SystemSupportNative
+   * Method:    installSystemModule
+   * Signature: (J)Ljava/lang/Boolean;
+   * 向系统注册一个新的模块（DLLRegsvr服务）
+   */
+JNIEXPORT jboolean JNICALL Java_org_swdc_fx_deploy_system_impl_SystemSupportNative_installSystemModule
+(JNIEnv* env, jclass clazz, jstring path) {
+	if (path == NULL) {
+		return false;
+	}
+	const wchar_t* wPath = js2w(env, path);
+	HINSTANCE moduleInstance = LoadLibrary(wPath);
+	delete wPath;
+	if (moduleInstance == NULL) {
+		FreeLibrary(moduleInstance);
+		return false;
+	}
+	FARPROC dllEntryPoint = GetProcAddress(moduleInstance, "DllRegisterServer");
+	if (dllEntryPoint != NULL && S_OK == (*dllEntryPoint)()) {
+		FreeLibrary(moduleInstance);
+		return true;
+	}
+	FreeLibrary(moduleInstance);
+	return false;
 }
 
 //wchar_t 转换成 jstring
@@ -117,4 +176,15 @@ jstring w2js(JNIEnv * env, wchar_t* src){
    jstring dst = env->NewString(dest, src_len);
    delete[] dest;
    return dst;
+}
+
+wchar_t* js2w(JNIEnv* env, jstring str) {
+	const char* nStr = env->GetStringUTFChars(str, NULL);
+	const int size = env->GetStringLength(str);
+	wchar_t* wStr = new wchar_t[size];
+	memset(wStr, 0, sizeof(wchar_t) * size);
+	int charCounts = MultiByteToWideChar(CP_UTF8, 0, nStr, -1, wStr, 0);
+	MultiByteToWideChar(CP_UTF8, 0, nStr, -1, wStr, charCounts);
+	env->ReleaseStringUTFChars(str, nStr);
+	return wStr;
 }

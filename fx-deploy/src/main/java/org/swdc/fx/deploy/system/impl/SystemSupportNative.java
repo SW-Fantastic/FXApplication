@@ -48,4 +48,8 @@ public class SystemSupportNative {
 
     public static native boolean stopProcess(long pid);
 
+    public static native boolean installSystemModule(String path);
+
+    public static native boolean uninstallSystemModule(String path);
+
 }

@@ -108,6 +108,7 @@ public class FXView extends AppComponent {
     protected void createView() {
         View view = this.getClass().getAnnotation(View.class);
         this.parent = create();
+        this.parent.setUserData(this);
         if (view.stage()) {
             stage = new Stage();
             stage.initStyle(view.stageStyle());
