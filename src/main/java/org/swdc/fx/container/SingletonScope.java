@@ -26,9 +26,11 @@ public class SingletonScope<T extends AppComponent> implements ComponentScope<T 
         if (components.containsKey(clazz)) {
             return;
         }
-        for (Class clazzItem : components.keySet()) {
-            if (clazzItem.isAssignableFrom(clazz)) {
-                return;
+        if (!Container.class.isAssignableFrom(clazz)) {
+            for (Class clazzItem : components.keySet()) {
+                if (clazzItem.isAssignableFrom(clazz)) {
+                    return;
+                }
             }
         }
         components.put(clazz,target);

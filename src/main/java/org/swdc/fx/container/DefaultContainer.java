@@ -4,7 +4,12 @@ import org.swdc.fx.AppComponent;
 
 import java.lang.reflect.Constructor;
 
-public abstract class DefaultContainer<T extends AppComponent> extends ScanableContainer<T> {
+public abstract class DefaultContainer<T extends AppComponent> extends Container<T> {
+
+    @Override
+    public void initialize() {
+        this.scanComponentAndInitialize();
+    }
 
     @Override
     protected <R extends T> R instance(Class<R> target) {

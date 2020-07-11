@@ -12,6 +12,7 @@ import org.swdc.fx.event.AppEvent;
 import org.swdc.fx.event.EventPublisher;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
+import org.swdc.fx.scanner.IPackageScanner;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -312,6 +313,16 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
             }
             if (object instanceof AppComponent) {
                 removeListener((AppComponent)object);
+            }
+        }
+    }
+
+    protected void scanComponentAndInitialize() {
+        IPackageScanner scanner = IPackageScanner.getScanner(this.getClass());
+        List<Class<?>> classList = scanner.scanPackage();
+        for (Class clazz: classList) {
+            if (this.isComponentOf(clazz)) {
+                register(clazz);
             }
         }
     }

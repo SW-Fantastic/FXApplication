@@ -132,19 +132,18 @@ public class AppComponent implements LifeCircle {
 
     public <T> List<T> getScoped(Class<T> scopeClazz) {
         List<Container> containers = container.listComponents();
+        List<T> result = new ArrayList<>();
         for (Container container: containers) {
             if (container.isComponentOf(scopeClazz)) {
                List<Object> content = container.listComponents();
-               List<T> result = new ArrayList<>();
                for (Object comp: content){
                    if (scopeClazz.isAssignableFrom(comp.getClass())) {
                        result.add((T)comp);
                    }
                }
-               return result;
             }
         }
-        return Collections.emptyList();
+        return result;
     }
 
     public String getThemeAssetsPath() {
