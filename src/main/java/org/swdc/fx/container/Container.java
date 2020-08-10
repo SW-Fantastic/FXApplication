@@ -317,14 +317,18 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
         }
     }
 
-    protected void scanComponentAndInitialize() {
-        IPackageScanner scanner = IPackageScanner.getScanner(this.getClass());
+    protected void scanComponentAndInitialize(Class clazzTarget) {
+        IPackageScanner scanner = IPackageScanner.getScanner(clazzTarget);
         List<Class<?>> classList = scanner.scanPackage();
         for (Class clazz: classList) {
             if (this.isComponentOf(clazz)) {
                 register(clazz);
             }
         }
+    }
+
+    protected void scanComponentAndInitialize() {
+       this.scanComponentAndInitialize(this.getClass());
     }
 
     /**

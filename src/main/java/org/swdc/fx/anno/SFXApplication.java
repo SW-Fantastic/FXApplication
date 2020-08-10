@@ -37,6 +37,10 @@ public @interface SFXApplication {
      */
     String assetsPath() default "./assets";
 
+    /**
+     * 单例应用，只能启动一个
+     * @return
+     */
     boolean singleton() default false;
 
 }
