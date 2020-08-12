@@ -22,7 +22,9 @@
 数据库支持，仿照Spring的JpaRepository接口的数据库操作。
 当然是没有那种基于方法名的查询，总感觉那个做起来很麻烦。
 
-默认h2数据库
+默认h2数据库。
+
+数据库的transaction注解已经添加了，有一个默认的事务切面。
 
 #### 拓展模块： fx.framework.resource
 
@@ -37,6 +39,11 @@ Fontawesome和MaterialIcons两套字体图标。
 #### 拓展模块：fx.framework.deploy
 
 系统集成，支持mac和windows，提供了进程操作api和文件关联。
+
+
+#### 拓展模块：fx.framework.aop
+
+aop功能的支持，提供aop切面编程，但是没有做切点表达式，切面通过正则匹配。
 
 ## 测试
 没写，没时间，以后加。

@@ -15,12 +15,11 @@ import org.swdc.fx.container.Container;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.scanner.IPackageScanner;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class AspectExtraModule extends ExtraModule<Advisor> {
 
@@ -39,28 +38,45 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
                 }
                 if (item.getAnnotation(Before.class) != null) {
                     Before before = item.getAnnotation(Before.class);
+                    if (before.pattern().equals("") && before.annotationWith() == Annotation.class) {
+                        continue;
+                    } else if (before.annotationWith() != Annotation.class) {
+                        execution.setAnnotationWith(before.annotationType());
+                    } else if (!before.pattern() .equals("")) {
+                        execution.setPattern(Pattern.compile(before.pattern()));
+                    }
                     execution.setLocation(AspectLocation.BEFORE);
                     execution.setAdvisor(advisor);
                     execution.setInvocation(item);
-                    execution.setPattern(Pattern.compile(before.pattern()));
                     advisor.addExecution(execution);
                 } else if (item.getAnnotation(After.class) != null) {
                     After after = item.getAnnotation(After.class);
+                    if (after.annotationWith() == Annotation.class && after.pattern().equals("")) {
+                        continue;
+                    } else if (after.annotationWith() != Annotation.class) {
+                        execution.setAnnotationWith(after.annotationType());
+                    } else if (!after.pattern().equals("")) {
+                        execution.setPattern(Pattern.compile(after.pattern()));
+                    }
                     execution.setLocation(AspectLocation.AFTER);
                     execution.setAdvisor(advisor);
                     execution.setInvocation(item);
-                    execution.setPattern(Pattern.compile(after.pattern()));
                     advisor.addExecution(execution);
                 } else if (item.getAnnotation(Around.class) != null) {
                     Around around = item.getAnnotation(Around.class);
+                    if (around.annotationWith() == Annotation.class && around.pattern().equals("")) {
+                        continue;
+                    } else if (around.annotationWith() !=  Annotation.class){
+                        execution.setAnnotationWith(around.annotationWith());
+                    } else if (!around.pattern().equals("")) {
+                        execution.setPattern(Pattern.compile(around.pattern()));
+                    }
                     execution.setLocation(AspectLocation.AROUND);
                     execution.setAdvisor(advisor);
                     execution.setInvocation(item);
-                    execution.setPattern(Pattern.compile(around.pattern()));
                     advisor.addExecution(execution);
                 }
             }
-
             return (R) advisor;
         } catch (Exception e) {
             logger.error("can not instance advisor : " + target.getName());
@@ -82,6 +98,19 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
         List<Class<?>> classes = scanner.scanSubClass(Advisor.class);
         for (Class clazz: classes) {
             this.register(clazz);
+        }
+        Set<Module> modules = ModuleLayer.boot().modules();
+        for (Module module: modules){
+            Set<String> packages = module.getPackages();
+            List<String> exportFor = packages.stream()
+                    .filter(i -> module.isExported(i,this.getClass().getModule()))
+                    .collect(Collectors.toList());
+            if (exportFor.size() > 0) {
+                classes = scanner.scanSubClass(Advisor.class);
+                for (Class clazz: classes) {
+                    this.register(clazz);
+                }
+            }
         }
         logger.info("aspect module initialized.");
         return true;
@@ -135,7 +164,6 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
                     .getLoaded()
                     .getConstructor()
                     .newInstance();
-
             return proxied;
         } catch (Exception e) {
             logger.error("fail to proxy",e);

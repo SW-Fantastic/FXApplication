@@ -99,6 +99,16 @@ public class AppComponent implements LifeCircle {
         }
     }
 
+    protected <T> T getExtraModule(Class<? extends ExtraModule> extra) {
+        ExtraManager manager = container.getComponent(ExtraManager.class);
+        ExtraModule module = manager.getComponent(extra);
+        if (module == null) {
+            return null;
+        } else {
+            return (T) module;
+        }
+    }
+
     /**
      * 查找组件，除了single的组件之外，都是新建的组件。
      * single组件会直接返回已有的单例实例。

@@ -13,10 +13,20 @@ public class PointExecution {
 
     private Method invocation;
 
+    private Class annotationWith;
+
     private int order;
 
     public int getOrder() {
         return order;
+    }
+
+    public Class getAnnotationWith() {
+        return annotationWith;
+    }
+
+    public void setAnnotationWith(Class annotationWith) {
+        this.annotationWith = annotationWith;
     }
 
     public Advisor getAdvisor() {

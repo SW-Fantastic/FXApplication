@@ -36,7 +36,8 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         EntityManager manager = extraModule.getEntityManager();
 
         String name = method.getName();
-        if (name.equals("getOne") || name.equals("getAll") || name.equals("save") || name.equals("remove")) {
+        if (name.equals("getOne") || name.equals("getAll")
+                || name.equals("removeAll") || name.equals("save") || name.equals("remove")) {
             return method.invoke(this,args);
         }
         try {
@@ -141,11 +142,11 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
     }
 
     @Override
-    public void save(E entry) {
+    public E save(E entry) {
         EntityManager entityManager = extraModule.getEntityManager();
         if (entityManager == null) {
             logger.error("no entity manager at current thread");
-            return;
+            return null;
         }
         boolean autoCommit = false;
         if (!entityManager.getTransaction().isActive()) {
@@ -155,7 +156,7 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         Field idField = getIdField(entry.getClass());
         if (idField == null) {
             logger.error("no id field found");
-            return;
+            return null;
         }
         try {
             idField.setAccessible(true);
@@ -165,7 +166,7 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
                 if (autoCommit) {
                     entityManager.getTransaction().commit();
                 }
-                return;
+                return entry;
             }
             E entExisted = this.getOne((ID) id);
             if (entExisted == null) {
@@ -174,16 +175,17 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
                 if (autoCommit) {
                     entityManager.getTransaction().commit();
                 }
-                return;
+                return entry;
             }
-            entityManager.merge(entry);
+            entry = entityManager.merge(entry);
             if (autoCommit) {
                 entityManager.getTransaction().commit();
             }
+            return entry;
         } catch (Exception ex) {
             logger.error("error persistent entry: " + entry.getClass().getSimpleName(), ex);
+            return null;
         }
-        return;
     }
 
     private Field getIdField(Class target) {
@@ -204,6 +206,28 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             }
         }
         return null;
+    }
+
+    @Override
+    public void removeAll(Collection<E> entities) {
+        EntityManager entityManager = extraModule.getEntityManager();
+        if (entityManager == null) {
+            logger.error("no entity manager at current thread");
+            return;
+        }
+        boolean autoCommit = false;
+        if (!entityManager.getTransaction().isActive()) {
+            autoCommit = true;
+            entityManager.getTransaction().begin();
+        }
+        for (E entity: entities) {
+            entityManager.refresh(entity);
+            entityManager.remove(entity);
+        }
+        if(autoCommit) {
+            entityManager.getTransaction().commit();
+        }
+
     }
 
     @Override

@@ -11,7 +11,7 @@ public class ExecutablePoint {
 
     private Object instance;
 
-    ExecutablePoint next;
+    private ExecutablePoint next;
 
     public Object process() throws Exception {
         if (next != null) {
@@ -37,7 +37,15 @@ public class ExecutablePoint {
         this.params = params;
     }
 
-    public static ExecutablePoint resolve(List<PointExecution> executions,Object[] param,int index) {
+    public Object[] getParams() {
+        return params;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public static ExecutablePoint resolve(List<PointExecution> executions, Object[] param, int index) {
         ExecutablePoint point = new ExecutablePoint();
         point.setParams(param);
         if (index < executions.size() - 1) {

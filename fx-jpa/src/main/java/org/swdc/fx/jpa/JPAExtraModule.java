@@ -13,14 +13,15 @@ import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class JPAExtraModule extends ExtraModule<Object> {
 
     private EntityManagerFactory entityFactory;
 
-    private ThreadLocal<EntityManager> localEm = new ThreadLocal<>();
-
-    private List<EntityManager> entityManagerList = new ArrayList<>();
+    // ThreadLocal的原理运用，以线程为key维护他们的EntityManager
+    private static Map<Thread, EntityManager> localEm = new ConcurrentHashMap<>();
 
     private List<DefaultRepository> handlers = new ArrayList<>();
 
@@ -81,9 +82,13 @@ public class JPAExtraModule extends ExtraModule<Object> {
         for(DefaultRepository repository :this.handlers) {
             repository.destroy();
         }
-        for (EntityManager em: entityManagerList){
+        for (EntityManager em: localEm.values()){
             if (em.getTransaction().isActive()) {
-                em.getTransaction().commit();
+                try {
+                    em.getTransaction().commit();
+                } catch (Exception e) {
+                    logger.error("fail to commit transaction",e);
+                }
             }
             em.close();
         }
@@ -106,11 +111,31 @@ public class JPAExtraModule extends ExtraModule<Object> {
     }
 
     public EntityManager getEntityManager() {
-        EntityManager entityManager = localEm.get();
+        // 检测并移除结束的线程的entityManager。
+        List<Thread> deadThreads = localEm.keySet()
+                .stream()
+                .filter(i -> !i.isAlive())
+                .collect(Collectors.toList());
+        for (Thread deadThread: deadThreads) {
+            EntityManager manager = localEm.get(deadThread);
+            if (manager.isOpen()) {
+                if (manager.getTransaction().isActive()) {
+                    try {
+                        manager.getTransaction().commit();
+                    } catch (Exception e){
+                        logger.error("fail to commit transaction of one dead thread.", e);
+                    }
+                }
+                manager.clear();
+                manager.close();
+            }
+            localEm.remove(deadThread);
+        }
+
+        EntityManager entityManager = localEm.get(Thread.currentThread());
         if (entityManager == null) {
             entityManager = entityFactory.createEntityManager();
-            localEm.set(entityManager);
-            entityManagerList.add(entityManager);
+            localEm.put(Thread.currentThread(),entityManager);
         }
         return entityManager;
     }

@@ -45,9 +45,16 @@ public class Advisor extends AppComponent {
         for (Method method: methods) {
             String methodName = clazzPrefix + method.getName();
             List<PointExecution> matchedPoints = executionList.stream()
-                    .filter(i -> i.getPattern().matcher(methodName).find())
+                    .filter(i -> {
+                        if (i.getPattern() != null) {
+                            return i.getPattern().matcher(methodName).find();
+                        } else if (i.getAnnotationWith() != null){
+                            return method.getAnnotation(i.getAnnotationWith()) != null;
+                        }
+                        return false;
+                    })
                     .collect(Collectors.toList());
-            if (matchedPoints == null || matchedPoints.size() == 0) {
+            if (matchedPoints.size() == 0) {
                 continue;
             }
             result.put(method,matchedPoints);

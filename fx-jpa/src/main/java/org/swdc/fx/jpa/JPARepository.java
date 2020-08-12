@@ -1,5 +1,6 @@
 package org.swdc.fx.jpa;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface JPARepository<E, ID> {
@@ -8,8 +9,10 @@ public interface JPARepository<E, ID> {
 
     List<E> getAll();
 
-    void save(E entry);
+    E save(E entry);
 
     void remove(E entry);
+
+    void removeAll(Collection<E> entities);
 
 }
