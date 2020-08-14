@@ -8,6 +8,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 import net.sf.cglib.proxy.Enhancer;
 import org.swdc.fx.anno.Order;
 import org.swdc.fx.aop.anno.After;
+import org.swdc.fx.aop.anno.AfterReturning;
 import org.swdc.fx.aop.anno.Around;
 import org.swdc.fx.aop.anno.Before;
 import org.swdc.fx.container.ApplicationContainer;
@@ -72,6 +73,19 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
                         execution.setPattern(Pattern.compile(around.pattern()));
                     }
                     execution.setLocation(AspectLocation.AROUND);
+                    execution.setAdvisor(advisor);
+                    execution.setInvocation(item);
+                    advisor.addExecution(execution);
+                } else if (item.getAnnotation(AfterReturning.class) != null) {
+                    AfterReturning afterReturning = item.getAnnotation(AfterReturning.class);
+                    if (afterReturning.annotationWith() == Annotation.class && afterReturning.pattern().equals("")) {
+                        continue;
+                    } else if (afterReturning.annotationWith() != Annotation.class){
+                        execution.setAnnotationWith(afterReturning.annotationWith());
+                    } else if (!afterReturning.pattern().equals("")) {
+                        execution.setPattern(Pattern.compile(afterReturning.pattern()));
+                    }
+                    execution.setLocation(AspectLocation.AFTER_RETURN);
                     execution.setAdvisor(advisor);
                     execution.setInvocation(item);
                     advisor.addExecution(execution);

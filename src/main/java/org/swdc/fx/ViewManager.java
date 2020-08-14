@@ -1,5 +1,6 @@
 package org.swdc.fx;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
 import org.swdc.fx.container.ApplicationContainer;
@@ -10,6 +11,9 @@ import org.swdc.fx.properties.DefaultUIConfigProp;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 管理View的容器。
@@ -38,32 +42,48 @@ public class ViewManager extends Container<FXView> {
             }
             FXView view = (FXView) constructorNoArgs.newInstance();
             view.setContainer((ApplicationContainer) this.getParent());
-            if (!view.loadFxmlView()) {
-                view.createView();
-            } else {
-                FXMLLoader loader = view.getLoader();
-                if (loader != null) {
-                    Object controller = loader.getController();
-                    if (controller != null && controller instanceof FXController) {
-                        FXController fxController = (FXController) controller;
-                        Class ctrlClazz = fxController.getClass();
-                        fxController.setContainer((ApplicationContainer) this.getParent());
-                        if (ctrlClazz.getModule().isOpen(target.getPackageName(), FXApplication.class.getModule())) {
-                            this.awareComponents(fxController);
+            FutureTask<FXView> task = new FutureTask<>(new Callable<FXView>() {
+                @Override
+                public FXView call() throws Exception {
+                    try {
+                        if (!view.loadFxmlView()) {
+                            view.createView();
+                        } else {
+                            FXMLLoader loader = view.getLoader();
+                            if (loader != null) {
+                                Object controller = loader.getController();
+                                if (controller != null && controller instanceof FXController) {
+                                    FXController fxController = (FXController) controller;
+                                    Class ctrlClazz = fxController.getClass();
+                                    fxController.setContainer((ApplicationContainer) getParent());
+                                    if (ctrlClazz.getModule().isOpen(target.getPackageName(), FXApplication.class.getModule())) {
+                                        awareComponents(fxController);
+                                    }
+                                    fxController.setView(view);
+                                    fxController.initialize();
+                                    registerEventHandler(fxController);
+                                }
+                            }
                         }
-                        fxController.setView(view);
-                        fxController.initialize();
-                        this.registerEventHandler(fxController);
+                        if (!(view instanceof PopupView)) {
+                            if (view.hasStage()) {
+                                view.getStage().getIcons().addAll(icons);
+                            }
+                        }
+                        theme.initView(view);
+                        return view;
+                    } catch (Exception e) {
+                        logger.error("fail to instance fxview",e);
+                        return null;
                     }
                 }
+            });
+            if (Platform.isFxApplicationThread()) {
+                task.run();
+            } else {
+                Platform.runLater(task);
             }
-            if (!(view instanceof PopupView)) {
-                if (view.hasStage()) {
-                    view.getStage().getIcons().addAll(this.icons);
-                }
-            }
-            theme.initView(view);
-            return view;
+            return task.get();
         } catch (Exception ex) {
             logger.error("fail to init view : " + target.getSimpleName(), ex);
         }

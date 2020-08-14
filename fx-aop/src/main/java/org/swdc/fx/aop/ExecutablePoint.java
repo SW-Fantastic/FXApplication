@@ -9,6 +9,8 @@ public class ExecutablePoint {
 
     private Method method;
 
+    private Method original;
+
     private Object instance;
 
     private ExecutablePoint next;
@@ -17,8 +19,16 @@ public class ExecutablePoint {
         if (next != null) {
             return method.invoke(instance,next);
         } else {
-            return method.invoke(instance,params);
+            return original.invoke(instance,params);
         }
+    }
+
+    public void setOriginal(Method original) {
+        this.original = original;
+    }
+
+    public Method getOriginal() {
+        return original;
     }
 
     public void setNext(ExecutablePoint next) {
@@ -45,23 +55,16 @@ public class ExecutablePoint {
         return method;
     }
 
-    public static ExecutablePoint resolve(List<PointExecution> executions, Object[] param, int index) {
+    public static ExecutablePoint resolve(Method original, List<PointExecution> executions, Object[] param, int index) {
         ExecutablePoint point = new ExecutablePoint();
         point.setParams(param);
         if (index < executions.size() - 1) {
-            point.setNext(resolve(executions, param, index + 1));
+            point.setNext(resolve(original,executions, param, index + 1));
         }
         point.setInstance(executions.get(index).getAdvisor());
         point.setMethod(executions.get(index).getInvocation());
+        point.setOriginal(original);
         return point;
-    }
-
-    public static ExecutablePoint getLast(ExecutablePoint point) {
-        ExecutablePoint executablePoint = point;
-        while (executablePoint.next != null) {
-            executablePoint = executablePoint.next;
-        }
-        return executablePoint;
     }
 
 }
