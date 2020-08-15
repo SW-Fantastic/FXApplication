@@ -1,11 +1,8 @@
 package org.swdc.fx.aop;
 
 import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
-import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.matcher.ElementMatchers;
-import net.sf.cglib.proxy.Enhancer;
 import org.swdc.fx.anno.Order;
 import org.swdc.fx.aop.anno.After;
 import org.swdc.fx.aop.anno.AfterReturning;
@@ -13,9 +10,11 @@ import org.swdc.fx.aop.anno.Around;
 import org.swdc.fx.aop.anno.Before;
 import org.swdc.fx.container.ApplicationContainer;
 import org.swdc.fx.container.Container;
+import org.swdc.fx.extra.ExtraLoader;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.scanner.IPackageScanner;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -113,17 +112,16 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
         for (Class clazz: classes) {
             this.register(clazz);
         }
-        Set<Module> modules = ModuleLayer.boot().modules();
-        for (Module module: modules){
-            Set<String> packages = module.getPackages();
-            List<String> exportFor = packages.stream()
-                    .filter(i -> module.isExported(i,this.getClass().getModule()))
-                    .collect(Collectors.toList());
-            if (exportFor.size() > 0) {
-                classes = scanner.scanSubClass(Advisor.class);
-                for (Class clazz: classes) {
-                    this.register(clazz);
-                }
+        ServiceLoader<ExtraLoader> loaders = ServiceLoader.load(ExtraLoader.class);
+        List<Class> moduleClasses = loaders.stream()
+                .map(ServiceLoader.Provider::get)
+                .map(ExtraLoader::getModuleClass)
+                .collect(Collectors.toList());
+        for (Class moduleClazz : moduleClasses) {
+            IPackageScanner extraScanner = IPackageScanner.getScanner(moduleClazz);
+            List<Class<?>> extraAdvisors = extraScanner.scanSubClass(Advisor.class);
+            for (Class item: extraAdvisors) {
+                this.register(item);
             }
         }
         logger.info("aspect module initialized.");
@@ -178,6 +176,7 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
                     .getLoaded()
                     .getConstructor()
                     .newInstance();
+            logger.info("proxied " + comp.getClass());
             return proxied;
         } catch (Exception e) {
             logger.error("fail to proxy",e);

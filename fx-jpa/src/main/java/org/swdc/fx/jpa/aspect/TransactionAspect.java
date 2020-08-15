@@ -1,5 +1,6 @@
 package org.swdc.fx.jpa.aspect;
 
+import org.swdc.fx.anno.Order;
 import org.swdc.fx.aop.Advisor;
 import org.swdc.fx.aop.ExecutablePoint;
 import org.swdc.fx.aop.anno.Around;
@@ -10,6 +11,7 @@ import javax.persistence.EntityTransaction;
 
 public class TransactionAspect extends Advisor {
 
+    @Order(-999)
     @Around(annotationWith = Transactional.class)
     public Object transaction(ExecutablePoint point) {
         JPAExtraModule extraModule = getExtraModule(JPAExtraModule.class);

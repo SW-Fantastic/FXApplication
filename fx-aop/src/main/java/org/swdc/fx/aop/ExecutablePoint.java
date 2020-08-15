@@ -19,7 +19,7 @@ public class ExecutablePoint {
         if (next != null) {
             return method.invoke(instance,next);
         } else {
-            return original.invoke(instance,params);
+            return method.invoke(instance,params);
         }
     }
 
@@ -55,14 +55,19 @@ public class ExecutablePoint {
         return method;
     }
 
-    public static ExecutablePoint resolve(Method original, List<PointExecution> executions, Object[] param, int index) {
+    public static ExecutablePoint resolve(Object originalInstance,Method original, List<PointExecution> executions, Object[] param, int index) {
         ExecutablePoint point = new ExecutablePoint();
         point.setParams(param);
-        if (index < executions.size() - 1) {
-            point.setNext(resolve(original,executions, param, index + 1));
+        if (index < executions.size()) {
+            point.setNext(resolve(originalInstance,original,executions, param, index + 1));
         }
-        point.setInstance(executions.get(index).getAdvisor());
-        point.setMethod(executions.get(index).getInvocation());
+        if (index == executions.size()) {
+            point.setInstance(originalInstance);
+            point.setMethod(original);
+        } else {
+            point.setInstance(executions.get(index).getAdvisor());
+            point.setMethod(executions.get(index).getInvocation());
+        }
         point.setOriginal(original);
         return point;
     }

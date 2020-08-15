@@ -61,13 +61,29 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             try {
                 Class returnClazz = method.getReturnType();
                 if (Set.class.isAssignableFrom(returnClazz)) {
-                    return query.getResultStream().collect(Collectors.toSet());
+                    List list = query.getResultList();
+                    if (list == null || list.size() == 0) {
+                        return Collections.emptyList();
+                    }
+                    return list.stream().collect(Collectors.toSet());
                 } else if (List.class.isAssignableFrom(returnClazz)) {
-                    return query.getResultStream().collect(Collectors.toList());
+                    List list = query.getResultList();
+                    if (list == null || list.size() == 0) {
+                        return Collections.emptyList();
+                    }
+                    return list;
                 } else if (Collection.class.isAssignableFrom(returnClazz)) {
-                    return query.getResultStream().collect(Collectors.toList());
+                    List list = query.getResultList();
+                    if (list == null || list.size() == 0) {
+                        return Collections.emptyList();
+                    }
+                    return list;
                 } else if (returnClazz == eClass) {
-                    return query.getResultList().get(query.getFirstResult());
+                    List list = query.getResultList();
+                    if (list == null || list.size() == 0) {
+                        return null;
+                    }
+                    return list.get(query.getFirstResult());
                 } else if (returnClazz == Integer.class || returnClazz == Long.class) {
                     return modify == null ?
                             // 没有modify，普通查询

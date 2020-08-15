@@ -1,8 +1,10 @@
 package org.swdc.fx.event;
 
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.AppComponent;
+import org.swdc.fx.anno.Listener;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,6 +37,16 @@ public interface EventListener<T> {
         @Override
         public void handler(AppEvent<T> event) {
             try {
+                if (method.getAnnotation(Listener.class).updateUI()) {
+                    Platform.runLater(() -> {
+                        try {
+                            method.invoke(target, event);
+                        } catch (Exception e) {
+                            logger.error("fail to execute listener",  e);
+                        }
+                    });
+                    return;
+                }
                 method.invoke(target, event);
             } catch (Exception ex) {
                 logger.error("fail to execute event handler : " + target.getClass().getSimpleName() + " " + method.getName(), ex);
@@ -58,6 +70,16 @@ public interface EventListener<T> {
         @Override
         public void handler(AppEvent<T> event) {
             try {
+                if (method.getAnnotation(Listener.class).updateUI()) {
+                    Platform.runLater(() -> {
+                        try {
+                            method.invoke(target, event);
+                        } catch (Exception e) {
+                            logger.error("fail to execute listener",  e);
+                        }
+                    });
+                    return;
+                }
                 method.invoke(target, event);
             } catch (Exception ex) {
                 logger.error("fail to execute event handler : " + target.getClass().getSimpleName() + " " + method.getName(), ex);

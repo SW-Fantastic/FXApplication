@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Listener {
 
+    boolean updateUI() default false;
+
     Class<? extends AppEvent> value() default AppEvent.class;
 
 }

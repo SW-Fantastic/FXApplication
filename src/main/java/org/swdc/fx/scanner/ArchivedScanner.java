@@ -67,7 +67,7 @@ public class ArchivedScanner implements IPackageScanner{
 					.collect(Collectors.toList());
 		}
 		LinkedList<Class<?>> container = new LinkedList<>();
-		this.scanClasses(this::assignableAdded, container, null);
+		this.scanClasses(this::assignableAdded, container, parent);
 		return new LinkedList<>(container);
 	}
 

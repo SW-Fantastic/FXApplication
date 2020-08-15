@@ -11,6 +11,7 @@ import org.swdc.fx.anno.SFXApplication;
 import org.swdc.fx.container.ApplicationContainer;
 import org.swdc.fx.container.Container;
 import org.swdc.fx.event.AppEvent;
+import org.swdc.fx.extra.ExtraLoader;
 import org.swdc.fx.net.data.MainParameter;
 import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
@@ -32,6 +33,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Application基类，
@@ -293,23 +295,13 @@ public abstract class FXApplication extends Application implements OpenFilesHand
 
         ExtraManager extraManager = containers.getComponent(ExtraManager.class);
 
-        ModuleLayer layer = ModuleLayer.boot();
-        Set<Module> modules = layer.modules();
-        for (Module mod: modules) {
-            try (InputStream in = mod.getResourceAsStream("extra.properties")){
-                if (in != null) {
-                    Properties properties = new Properties();
-                    properties.load(in);
-                    String extraClazz = properties.getProperty("module");
-                    Class clazz = mod.getClassLoader().loadClass(extraClazz);
-                    if (ExtraModule.class.isAssignableFrom(clazz)) {
-                        extraManager.register(clazz);
-                    }
-                }
-            } catch (Exception ex) {
-
-            }
-        }
+        ServiceLoader<ExtraLoader> loaders = ServiceLoader.load(ExtraLoader.class);
+        loaders.stream()
+                .map(ServiceLoader.Provider::get)
+                .sorted(Comparator.comparingInt(ExtraLoader::getOrder))
+                .map(ExtraLoader::getModuleClass)
+                .forEach(extraManager::register);
+        
     }
 
     public <T> List<T> getScoped(Class<T> scopeClazz) {

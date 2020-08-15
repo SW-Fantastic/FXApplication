@@ -21,6 +21,9 @@ public class ByteBuddyHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         List<PointExecution> advisorPoints = executions.get(method);
+        if (advisorPoints == null) {
+            return method.invoke(originalTarget,args);
+        }
         Map<AspectLocation,List<PointExecution>> executionMap = advisorPoints
                 .stream()
                 .collect(Collectors.groupingBy(PointExecution::getLocation));
@@ -40,7 +43,7 @@ public class ByteBuddyHandler implements InvocationHandler {
             List<PointExecution> around = executionMap.get(AspectLocation.AROUND);
             if (around != null && around.size() > 0) {
                 around.sort(Comparator.comparingInt(PointExecution::getOrder));
-                ExecutablePoint point = ExecutablePoint.resolve(method,around,args,0);
+                ExecutablePoint point = ExecutablePoint.resolve(originalTarget,method,around,args,0);
                 result = point.process();
             } else {
                 result = method.invoke(originalTarget,args);

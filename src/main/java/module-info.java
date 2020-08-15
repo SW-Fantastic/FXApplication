@@ -21,4 +21,5 @@ module fx.framework.core {
     exports org.swdc.fx.container;
 
     uses org.swdc.fx.extra.IconSPIService;
+    uses org.swdc.fx.extra.ExtraLoader;
 }

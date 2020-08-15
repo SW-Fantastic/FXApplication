@@ -3,6 +3,7 @@ package org.swdc.fx.aop;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.swdc.fx.AppComponent;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class Advisor extends AppComponent {
                     .filter(i -> {
                         if (i.getPattern() != null) {
                             return i.getPattern().matcher(methodName).find();
-                        } else if (i.getAnnotationWith() != null){
+                        } else if (i.getAnnotationWith() != Annotation.class){
                             return method.getAnnotation(i.getAnnotationWith()) != null;
                         }
                         return false;
