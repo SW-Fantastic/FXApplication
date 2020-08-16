@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,13 +48,11 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         Query query = resolveByQuery(manager, method, args);
         Modify modify = method.getAnnotation(Modify.class);
         if (query != null) {
-            // 是一个修改的query，需要事务
+            // 判断事务是否是在此处开启的，如果是的话，那本方法应该负责释放他
             boolean autoCommit = false;
             if (!manager.getTransaction().isActive()) {
-                if (modify != null) {
-                    manager.getTransaction().begin();
-                    autoCommit = true;
-                }
+                manager.getTransaction().begin();
+                autoCommit = true;
             }
 
             try {
@@ -106,14 +103,14 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
                 return null;
             } catch (Exception ex) {
                 // 回滚事务
-                if (modify != null && autoCommit) {
+                if (autoCommit) {
                     manager.getTransaction().rollback();
                     manager.close();
                 }
                 logger.error("fail to execute query: " + method.getName(), ex);
             } finally {
                 // 提交事务
-                if (modify != null && autoCommit) {
+                if (autoCommit) {
                     manager.getTransaction().commit();
                     manager.close();
                 }

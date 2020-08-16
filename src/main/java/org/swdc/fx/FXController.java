@@ -2,6 +2,9 @@ package org.swdc.fx;
 
 import javafx.fxml.Initializable;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 /**
  * 默认的Controller
  * 如果继承这个controller，并且在fxml中指定，那么
@@ -11,6 +14,11 @@ import javafx.fxml.Initializable;
 public abstract class FXController extends AppComponent implements Initializable {
 
     private FXView view;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+
+    }
 
     public void setView(FXView view) {
         this.view = view;
