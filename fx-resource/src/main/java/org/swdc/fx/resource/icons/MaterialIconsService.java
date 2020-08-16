@@ -28,6 +28,7 @@ public class MaterialIconsService implements IconFontService {
             fonts.put(FontSize.MIDDLE_SMALL, Font.loadFont(module.getResourceAsStream(location),18));
             fonts.put(FontSize.SMALL, Font.loadFont(module.getResourceAsStream(location),16));
             fonts.put(FontSize.VERY_SMALL, Font.loadFont(module.getResourceAsStream(location),14));
+            fonts.put(FontSize.SMALLEST,Font.loadFont(module.getResourceAsStream(location),12));
 
             materialMap.put("access_alarm", '\ue190');
             materialMap.put("ac_unit", '\ueb3b');

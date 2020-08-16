@@ -84,24 +84,38 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
                         return null;
                     }
                     return list.get(query.getFirstResult());
-                } else if (returnClazz == Integer.class || returnClazz == Long.class) {
-                    return modify == null ?
-                            // 没有modify，普通查询
-                            BigDecimal.class.cast(query.getSingleResult()).intValue():
-                            // 有modify，进行update
-                            query.executeUpdate();
+                } else if (returnClazz == Integer.class|| returnClazz == int.class || returnClazz == Long.class || returnClazz == long.class) {
+                    if (modify == null ) {
+                        Object result = query.getSingleResult();
+                        if (result != null) {
+                            if (result.getClass() == returnClazz) {
+                                return result;
+                            } else {
+                                try {
+                                    Method convertorMethod = returnClazz.getMethod("valueOf", String.class);
+                                    return convertorMethod.invoke(null,result.toString());
+                                } catch (Exception e) {
+                                    return null;
+                                }
+                            }
+                        }
+                    } else {
+                        return query.executeUpdate();
+                    }
                 }
                 return null;
             } catch (Exception ex) {
                 // 回滚事务
                 if (modify != null && autoCommit) {
                     manager.getTransaction().rollback();
+                    manager.close();
                 }
                 logger.error("fail to execute query: " + method.getName(), ex);
             } finally {
                 // 提交事务
                 if (modify != null && autoCommit) {
                     manager.getTransaction().commit();
+                    manager.close();
                 }
             }
 
@@ -111,7 +125,19 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
 
     public Query resolveByQuery(EntityManager em, Method method, Object[] args) {
         SQLQuery sqlQuery = method.getAnnotation(SQLQuery.class);
-        Query query = em.createQuery(sqlQuery.value(),eClass);
+        Query query = null;
+        if (method.getReturnType() == Integer.class || method.getReturnType() == int.class) {
+            // 聚合函数
+            query = em.createQuery(sqlQuery.value(),Integer.class);
+        } else if (method.getReturnType() == Long.class || method.getReturnType() == long.class) {
+            // 聚合函数
+            query = em.createQuery(sqlQuery.value(),Long.class);
+        } else if (method.getReturnType() == eClass) {
+            query = em.createQuery(sqlQuery.value(),eClass);
+        } else if (Collection.class.isAssignableFrom(method.getReturnType())){
+            query = em.createQuery(sqlQuery.value(),eClass);
+        }
+
         Parameter[] params = method.getParameters();
         if (query.getParameters().size() != method.getParameters().length) {
             logger.error("can not create query because parameters size dose not matches");

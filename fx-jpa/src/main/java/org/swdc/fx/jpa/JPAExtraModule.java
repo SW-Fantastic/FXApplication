@@ -133,7 +133,7 @@ public class JPAExtraModule extends ExtraModule<Object> {
         }
 
         EntityManager entityManager = localEm.get(Thread.currentThread());
-        if (entityManager == null) {
+        if (entityManager == null || !entityManager.isOpen()) {
             entityManager = entityFactory.createEntityManager();
             localEm.put(Thread.currentThread(),entityManager);
         }

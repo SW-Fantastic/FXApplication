@@ -136,6 +136,7 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
             if (target instanceof LifeCircle) {
                 LifeCircle.class.cast(target).initialize();
             }
+            this.componentReady(target);
             if (scopeAvailable) {
                 compScope.put(clazz, target);
             }
@@ -144,6 +145,14 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
             logger.error("fail to create component ", e);
             return null;
         }
+    }
+
+    /**
+     * 组件全部初始化工作完毕后触发
+     * @param comp 组件对象
+     */
+    protected void componentReady(Object comp) {
+
     }
 
     /**

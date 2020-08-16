@@ -29,6 +29,7 @@ public class FontawsomeService implements IconFontService, IconSPIService {
             fonts.put(FontSize.MIDDLE_SMALL, Font.loadFont(module.getResourceAsStream(location),18));
             fonts.put(FontSize.SMALL, Font.loadFont(module.getResourceAsStream(location),16));
             fonts.put(FontSize.VERY_SMALL, Font.loadFont(module.getResourceAsStream(location),14));
+            fonts.put(FontSize.SMALLEST,Font.loadFont(module.getResourceAsStream(location),12));
 
             awesomeMap.put("fa_500px", '\uf26e');
             awesomeMap.put("adjust", '\uf042');

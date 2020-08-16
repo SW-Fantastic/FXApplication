@@ -60,7 +60,6 @@ public class ViewManager extends Container<FXView> {
                                         awareComponents(fxController);
                                     }
                                     fxController.setView(view);
-                                    fxController.initialize();
                                     registerEventHandler(fxController);
                                 }
                             }
@@ -94,6 +93,20 @@ public class ViewManager extends Container<FXView> {
         return theme;
     }
 
+    @Override
+    protected void componentReady(Object target) {
+        if (target instanceof FXView) {
+            FXView view = (FXView)target;
+            FXMLLoader loader = view.getLoader();
+            if (loader != null) {
+                Object ctrl = loader.getController();
+                if (ctrl instanceof FXController) {
+                    FXController controller = (FXController)ctrl;
+                    controller.initialize();
+                }
+            }
+        }
+    }
 
     @Override
     public void destroy() {

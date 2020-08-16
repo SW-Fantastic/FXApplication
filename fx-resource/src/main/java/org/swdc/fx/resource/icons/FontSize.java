@@ -1,6 +1,8 @@
 package org.swdc.fx.resource.icons;
 
 public enum FontSize {
+    // 12
+    SMALLEST,
     // 14
     VERY_SMALL,
     // 16
