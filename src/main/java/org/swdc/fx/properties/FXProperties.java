@@ -2,6 +2,7 @@ package org.swdc.fx.properties;
 
 import javafx.scene.Node;
 import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.PropertyEditor;
 import org.swdc.fx.AppComponent;
 
 public abstract class FXProperties extends AppComponent {
@@ -20,7 +21,7 @@ public abstract class FXProperties extends AppComponent {
         }
         try {
             PropertySheet propertySheet = new PropertySheet(PropertyEditors.getProperties(this));
-            propertySheet.setPropertyEditorFactory(item -> PropertyEditors.getEditor(item, this));
+            propertySheet.setPropertyEditorFactory(this::createEditor);
             propertySheet.setModeSwitcherVisible(false);
             propertySheet.getStyleClass().add("prop-sheets");
             editor = propertySheet;
@@ -37,4 +38,7 @@ public abstract class FXProperties extends AppComponent {
         this.resolver.saveProperties(this);
     }
 
+    private PropertyEditor<?> createEditor(PropertySheet.Item item) {
+        return PropertyEditors.getEditor(item, this);
+    }
 }

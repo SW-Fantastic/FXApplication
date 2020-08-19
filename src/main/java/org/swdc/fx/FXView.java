@@ -2,6 +2,7 @@ package org.swdc.fx;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -9,10 +10,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
 import org.swdc.fx.util.Util;
+import org.swdc.fx.ux.MessageView;
 
 import java.io.InputStream;
 import java.util.List;
@@ -100,6 +104,20 @@ public class FXView extends AppComponent {
                 this.stage.close();
             }
         });
+    }
+
+    public void showToast(String text) {
+        try {
+            MessageView msgView = this.findComponent(MessageView.class);
+            msgView.setText(text);
+            Notifications.create()
+                    .graphic(msgView.getView())
+                    .position(Pos.CENTER)
+                    .hideAfter(Duration.seconds(2))
+                    .hideCloseButton()
+                    .show();
+        } catch (Exception e) {
+        }
     }
 
     /**

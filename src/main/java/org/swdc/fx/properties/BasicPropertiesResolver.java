@@ -49,6 +49,9 @@ public class BasicPropertiesResolver implements PropertiesResolver {
                  Method reader = propertyDescriptor.getReadMethod();
                  String propData = reader.invoke(props).toString();
                  ConfigProp prop = field.getAnnotation(ConfigProp.class);
+                 if (prop == null) {
+                     continue;
+                 }
                  String name = prop.propName();
                  targetProp.setProperty(properties.prefix() + "." + name, propData);
             }
