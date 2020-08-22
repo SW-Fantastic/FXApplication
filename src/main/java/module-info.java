@@ -4,7 +4,7 @@ module fx.framework.core {
     requires javafx.fxml;
     requires javafx.swing;
     requires slf4j.api;
-    requires jcl.over.slf4j;
+    requires static jcl.over.slf4j;
     requires lesscss.engine;
     requires org.controlsfx.controls;
     requires com.fasterxml.jackson.databind;

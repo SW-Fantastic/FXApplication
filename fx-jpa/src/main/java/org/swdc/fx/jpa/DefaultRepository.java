@@ -281,10 +281,25 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
             autoCommit = true;
             entityManager.getTransaction().begin();
         }
-        entityManager.refresh(entry);
-        entityManager.remove(entry);
-        if(autoCommit) {
-            entityManager.getTransaction().commit();
+        Field idField = getIdField(entry.getClass());
+        if (idField == null) {
+            logger.error("no id field found");
+            return;
+        }
+        try {
+            idField.setAccessible(true);
+            Object id = idField.get(entry);
+            if (id == null) {
+                logger.error("entity not persistent, can not remove now");
+                return;
+            }
+            entry = entityManager.find(eClass,id);
+            entityManager.remove(entry);
+            if(autoCommit) {
+                entityManager.getTransaction().commit();
+            }
+        } catch (Exception e) {
+            logger.error("fail to remove entity",e);
         }
     }
 

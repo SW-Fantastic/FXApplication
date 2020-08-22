@@ -122,11 +122,13 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
                 // 当前是拓展模块
                 if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
                     ExtraManager manager = ExtraManager.class.cast(this.getParent());
-                    AppComponent appComponent = AppComponent.class.cast(target);
-                    appComponent.setContainer((ApplicationContainer)manager.getParent());
-                    this.awareComponents((AppComponent) target);
-                    if (scopeAvailable && compScope.eventListenable()) {
-                        registerEventHandler(appComponent);
+                    if (target instanceof AppComponent) {
+                        AppComponent appComponent = AppComponent.class.cast(target);
+                        appComponent.setContainer((ApplicationContainer)manager.getParent());
+                        this.awareComponents((AppComponent) target);
+                        if (scopeAvailable && compScope.eventListenable()) {
+                            registerEventHandler(appComponent);
+                        }
                     }
                 }
             }
