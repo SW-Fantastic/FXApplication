@@ -168,7 +168,7 @@ public class PropertyEditors {
 
         if (propData.resolver() != PropResolver.class) {
             try {
-                PropResolver importer = propData.resolver().newInstance();
+                PropResolver importer = propData.resolver().getConstructor().newInstance();
                 buttonImport.setOnAction(e -> {
                     FileChooser chooser = new FileChooser();
                     chooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(importer.supportName(),importer.extensions()));
@@ -178,7 +178,7 @@ public class PropertyEditors {
                         files.clear();
                         for(File item : folder.listFiles()) {
                             if (item.isFile()) {
-                                files.add(file.getName());
+                                files.add(item.getName());
                             }
                         }
                         //UIUtil.showAlertDialog("资源导入成功。", "导入成功", Alert.AlertType.INFORMATION,config);
@@ -237,7 +237,11 @@ public class PropertyEditors {
 
             @Override
             public void setValue(Object o) {
-                comboBox.getSelectionModel().select(o.toString());
+                if (o == null) {
+                    comboBox.getSelectionModel().clearSelection();
+                } else {
+                    comboBox.getSelectionModel().select(o.toString());
+                }
             }
         };
     }
@@ -282,12 +286,14 @@ public class PropertyEditors {
                     File file = chooser.showOpenDialog(null);
                     try {
                         importer.resolve(file);
+                        String selected = comboBox.getSelectionModel().getSelectedItem();
                         files.clear();
                         for(File fileItem : folder.listFiles()) {
                             if (fileItem.isDirectory()) {
-                                files.add(file.getName());
+                                files.add(fileItem.getName());
                             }
                         }
+                        comboBox.getSelectionModel().select(selected);
                         // UIUtil.showAlertDialog("资源导入成功。", "导入成功", Alert.AlertType.INFORMATION,config);
                     } catch (Exception ex){
                        //  UIUtil.showAlertDialog("资源导入失败。", "导入失败", Alert.AlertType.ERROR,config);
