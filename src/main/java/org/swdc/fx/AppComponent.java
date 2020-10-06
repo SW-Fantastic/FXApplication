@@ -14,6 +14,8 @@ import org.swdc.fx.extra.ExtraManager;
 import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.properties.ConfigManager;
 import org.swdc.fx.properties.FXProperties;
+import org.swdc.fx.properties.Language;
+import org.swdc.fx.properties.Languages;
 import org.swdc.fx.services.Service;
 import org.swdc.fx.services.ServiceManager;
 
@@ -163,6 +165,15 @@ public class AppComponent implements LifeCircle {
                 .append(File.separator)
                 .append(findTheme() == null ? "default" : findTheme().getName()).toString())
                 .getAbsolutePath();
+    }
+
+    public String i18n(String text) {
+        if (text.startsWith(Languages.LANGUAGE_PREFIX)) {
+            text = text.replace(Languages.LANGUAGE_PREFIX,"");
+            Languages languages = findComponent(Languages.class);
+            return languages.getLanguage(text);
+        }
+        return text;
     }
 
     public void emit(AppEvent event) {

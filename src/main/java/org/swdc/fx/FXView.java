@@ -1,6 +1,10 @@
 package org.swdc.fx;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
+import javafx.css.Styleable;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -15,10 +19,13 @@ import org.controlsfx.control.Notifications;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swdc.fx.anno.View;
+import org.swdc.fx.properties.Languages;
 import org.swdc.fx.util.Util;
 import org.swdc.fx.ux.MessageView;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,11 +68,12 @@ public class FXView extends AppComponent {
                 if (inputStream != null) {
                     parent = loader.load(inputStream);
                     parent.setUserData(this);
+                    this.i18n(parent);
                     if (view.stage()) {
                         Scene scene = new Scene(parent);
                         stage = new Stage();
                         stage.initStyle(view.stageStyle());
-                        stage.setTitle(view.title());
+                        stage.setTitle(i18n(view.title()));
                         stage.setResizable(view.resizeable());
                         stage.setScene(scene);
                         if (view.dialog()) {
@@ -83,6 +91,77 @@ public class FXView extends AppComponent {
         } catch (Exception ex) {
             logger.error("error when load fxml view",ex);
             return false;
+        }
+    }
+
+    /**
+     * 处理国际化文本
+     * @param node
+     */
+    private void i18n(Parent node) {
+
+        try {
+            try{
+                Method textProp = node.getClass().getMethod("textProperty");
+                StringProperty prop = (StringProperty) textProp.invoke(node);
+                prop.setValue(i18n(prop.getValue()));
+            } catch (NoSuchMethodException ignore) {
+            }
+
+            try{
+                Method textProp = node.getClass().getMethod("promptTextProperty");
+                StringProperty prop = (StringProperty) textProp.invoke(node);
+                prop.setValue(i18n(prop.getValue()));
+            } catch (NoSuchMethodException ignore) {
+            }
+
+        } catch (Exception e) {
+            logger.error("fail to resolve language",e);
+        }
+
+        resolveI18nNode(node);
+
+        if (node.getChildrenUnmodifiable().size() > 0) {
+            for (Node item : node.getChildrenUnmodifiable()) {
+                if (item instanceof Parent) {
+                    Parent next = (Parent)item;
+                    if (next.getChildrenUnmodifiable().size() > 0) {
+                        i18n(next);
+                    } else {
+                        resolveI18nNode(next);
+                    }
+                } else {
+                    resolveI18nNode(item);
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理一些复杂组件的国际化
+     * @param item
+     */
+    private void resolveI18nNode(Node item) {
+        if (item instanceof TableView) {
+            TableView view = (TableView) item;
+            view.getColumns().forEach(col -> {
+                TableColumn column = (TableColumn) col;
+                column.setText(this.i18n(column.getText()));
+            });
+            if (view.getPlaceholder() instanceof Parent) {
+                this.i18n((Parent) view.getPlaceholder());
+            } else {
+                this.resolveI18nNode(view.getPlaceholder());
+            }
+        } else if (item instanceof Labeled) {
+            Labeled labeled = (Labeled) item;
+            labeled.setText(this.i18n(labeled.getText()));
+        } else if (item instanceof TextInputControl) {
+            TextInputControl inputControl = (TextInputControl) item;
+            inputControl.setText(this.i18n(inputControl.getText()));
+            if (inputControl.getPromptText() != null) {
+                inputControl.setPromptText(inputControl.getPromptText());
+            }
         }
     }
 
