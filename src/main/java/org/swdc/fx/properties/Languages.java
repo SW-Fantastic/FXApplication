@@ -30,7 +30,7 @@ public class Languages extends Service {
     }
 
     public String getLanguage(String textId) {
-        DefaultUIConfigProp configProp = findComponent(DefaultUIConfigProp.class);
+        DefaultUIConfigProp configProp = findProperties(DefaultUIConfigProp.class);
         String language = configProp.getLanguage();
         if (languageMap.containsKey(language)) {
             Language item = languageMap.get(configProp.getLanguage());

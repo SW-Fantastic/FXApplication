@@ -11,7 +11,7 @@ public class ConfigManager extends Container<FXProperties> {
     private String assetsPath = "assets/";
 
     public <T extends FXProperties> T getOverrideableProperties(Class<T> clazz) {
-       return getComponent(clazz);
+       return super.getComponentOverrideable(clazz);
     }
 
     public String getAssetsPath() {

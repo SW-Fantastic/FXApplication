@@ -15,6 +15,7 @@ import org.swdc.fx.extra.ExtraModule;
 import org.swdc.fx.scanner.IPackageScanner;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -55,6 +56,37 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
+     * 获取此类的子类组件。
+     * 组件子类只有一个的时候使用，一般是用来重写Config的时候使用
+     * @param clazz
+     * @param <R>
+     * @return
+     */
+    protected <R extends T> R getComponentOverrideable(Class<R> clazz) {
+        if (!isComponentOf(clazz)) {
+            return null;
+        }
+        Scope scope = clazz.getAnnotation(Scope.class);
+        ScopeType scopeType = scope == null ? ScopeType.SINGLE :scope.value();
+        for (ComponentScope componentScope: scopes) {
+            if (scopeType != componentScope.getType()) {
+                continue;
+            }
+            R result = (R)componentScope.get(clazz);
+            if (result != null) {
+                return result;
+            }
+            List<Object> components = componentScope.listAll();
+            for (Object object: components) {
+                if (clazz.isAssignableFrom(object.getClass())) {
+                    return (R)object;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * 获取组件，没有就创建一个
      * @param clazz 组件类
      * @param <R> 组件泛型
@@ -75,6 +107,7 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
                 return target;
             }
         }
+
         return (R)register(clazz);
     }
 
@@ -107,6 +140,9 @@ public abstract class Container<T> extends EventPublisher implements LifeCircle 
                 scopes.add(compScope);
             }
             Object target = instance(clazz);
+            if (target == null) {
+                return null;
+            }
             if (!(this instanceof ExtraModule) && !(this instanceof ApplicationContainer)) {
                 if (clazz.getModule().isOpen(clazz.getPackageName(), FXApplication.class.getModule())) {
                     if (target instanceof AppComponent) {

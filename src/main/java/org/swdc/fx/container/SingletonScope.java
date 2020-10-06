@@ -39,11 +39,6 @@ public class SingletonScope<T extends AppComponent> implements ComponentScope<T 
     @Override
     public Object get(Class clazz) {
         if (!components.containsKey(clazz)) {
-            for (Object object: components.values()) {
-                if (clazz.isAssignableFrom(object.getClass())) {
-                    return object;
-                }
-            }
             return null;
         }
         return components.get(clazz);
