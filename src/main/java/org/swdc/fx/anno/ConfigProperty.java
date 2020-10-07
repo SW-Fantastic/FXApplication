@@ -14,9 +14,15 @@ public class ConfigProperty extends BeanProperty {
 
     private ConfigProp propData;
 
+    private String name;
+
+    private String desc;
+
     public ConfigProperty(Object bean, PropertyDescriptor propertyDescriptor, ConfigProp prop) {
         super(bean, propertyDescriptor);
         propData = prop;
+        this.name = propData.name();
+        this.desc = propData.tooltip();
     }
 
     public ConfigProp getPropData() {
@@ -25,11 +31,27 @@ public class ConfigProperty extends BeanProperty {
 
     @Override
     public String getName() {
+        return this.name;
+    }
+
+    public String getOriginalName() {
         return propData.name();
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String getDescription() {
+        return this.desc;
+    }
+
+    public String getOriginalDescription() {
         return propData.tooltip();
+    }
+
+    public void setDescription(String desc) {
+        this.desc = desc;
     }
 }

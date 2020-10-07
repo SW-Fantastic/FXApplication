@@ -120,7 +120,7 @@ public class PropertyEditors {
         };
     }
 
-    public static ObservableList<PropertySheet.Item> getProperties(Object object) throws Exception {
+    public static ObservableList<PropertySheet.Item> getProperties(AppComponent object) throws Exception {
         ObservableList<PropertySheet.Item> list = FXCollections.observableArrayList();
         Field[] fields = object.getClass().getDeclaredFields();
         for(Field field: fields) {
@@ -129,6 +129,8 @@ public class PropertyEditors {
             }
             ConfigProp propDefinition = field.getAnnotation(ConfigProp.class);
             ConfigProperty property = new ConfigProperty(object,new PropertyDescriptor(field.getName(),object.getClass()),propDefinition);
+            property.setName(object.i18n(property.getName()));
+            property.setDescription(object.i18n(property.getDescription()));
             list.add(property);
         }
         return list;
