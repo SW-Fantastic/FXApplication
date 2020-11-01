@@ -159,7 +159,6 @@ public class PropertyEditors {
         buttonImport.getStyleClass().add("btn");
         buttonImport.setFont(spiService.getFont());
         buttonImport.setText(spiService.getNamedIcon(IconSPIService.IconSet.OPEN));
-
         files.clear();
         File folder = new File(propData.value());
         for(File file : folder.listFiles()) {
@@ -270,7 +269,6 @@ public class PropertyEditors {
         buttonImport.getStyleClass().add("btn");
         buttonImport.setFont(spiService.getFont());
         buttonImport.setText(spiService.getNamedIcon(IconSPIService.IconSet.OPEN));
-
         files.clear();
         File folder = new File(propData.value());
         for(File file : folder.listFiles()) {

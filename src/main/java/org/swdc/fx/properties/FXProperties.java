@@ -24,6 +24,7 @@ public abstract class FXProperties extends AppComponent {
             propertySheet.setPropertyEditorFactory(this::createEditor);
             propertySheet.setModeSwitcherVisible(false);
             propertySheet.getStyleClass().add("prop-sheets");
+            propertySheet.setSearchBoxVisible(false);
             editor = propertySheet;
             return propertySheet;
         } catch (Exception e) {
