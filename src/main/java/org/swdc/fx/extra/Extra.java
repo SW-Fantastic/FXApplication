@@ -42,6 +42,6 @@ public interface Extra<R> {
      * 清除Extra的影响，在destroy的时候回调
      * @param comp
      */
-    void disposeOnComponent(R comp);
+    void disposeOnComponent(Object comp);
 
 }

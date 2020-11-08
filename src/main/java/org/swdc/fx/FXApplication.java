@@ -218,7 +218,7 @@ public abstract class FXApplication extends Application implements OpenFilesHand
                     return;
                 }
                 logger.info("on stop");
-                this.onStart(containers);
+                this.onStop(containers);
                 logger.info("application is stopping...");
                 if (service != null) {
                     service.shutdown();
@@ -227,7 +227,7 @@ public abstract class FXApplication extends Application implements OpenFilesHand
                 logger.info("application has stopped.");
                 hasStopped = true;
             } catch (Exception ex) {
-
+                logger.error("fail to stop application",ex);
             }
         }
     }

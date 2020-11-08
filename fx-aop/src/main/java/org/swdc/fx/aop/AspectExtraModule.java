@@ -185,7 +185,7 @@ public class AspectExtraModule extends ExtraModule<Advisor> {
     }
 
     @Override
-    public void disposeOnComponent(Advisor comp) {
+    public void disposeOnComponent(Object comp) {
 
     }
 }
