@@ -225,7 +225,7 @@ public abstract class FXApplication extends Application implements OpenFilesHand
                 }
                 containers.destroy();
                 logger.info("application has stopped.");
-                hasStopped = true;
+                System.exit(0);
             } catch (Exception ex) {
                 logger.error("fail to stop application",ex);
             }
@@ -253,28 +253,12 @@ public abstract class FXApplication extends Application implements OpenFilesHand
     }
 
     /**
-     * 重启Application
-     */
-    public void relaunch() {
-        Platform.runLater(() -> {
-            try {
-                this.stopAndDestroy();
-                this.init();
-                this.start(new Stage());
-            } catch (Exception ex) {
-                logger.error("error when restart application: ", ex);
-            }
-        });
-    }
-
-    /**
      * 在JavaFX平台关闭的时候会调用，结束Application的运行
      * @throws Exception
      */
     @Override
     public void stop() throws Exception {
         this.stopAndDestroy();
-        System.exit(0);
     }
 
     /**

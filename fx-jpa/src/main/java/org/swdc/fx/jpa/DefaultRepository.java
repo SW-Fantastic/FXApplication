@@ -132,7 +132,7 @@ public class DefaultRepository<E, ID> implements InvocationHandler,JPARepository
         } else if (method.getReturnType() == eClass) {
             query = em.createQuery(sqlQuery.value(),eClass);
         } else if (Collection.class.isAssignableFrom(method.getReturnType())){
-            query = em.createQuery(sqlQuery.value(),eClass);
+            query = em.createQuery(sqlQuery.value());
         }
 
         Parameter[] params = method.getParameters();

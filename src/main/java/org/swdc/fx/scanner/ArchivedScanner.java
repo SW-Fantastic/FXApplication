@@ -4,9 +4,7 @@ import java.io.File;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -18,6 +16,8 @@ public class ArchivedScanner implements IPackageScanner{
 	private URL packageURL;
 	private String packagePath;
 	private List<Class<?>> result;
+
+	private static Map<String,List<Class>> cached = new HashMap<>();
 	
 	/**
 	 * 初始化压缩格式扫描器
@@ -79,6 +79,15 @@ public class ArchivedScanner implements IPackageScanner{
 	 */
 	public void scanClasses(ActionOnClassFound whenClassScaned, List<Class<?>> container, Class<?> reference) {
 		try {
+			List<Class> classList = new ArrayList<>();
+			String url = packageURL.toExternalForm();
+			if (cached.containsKey(url)) {
+				classList = cached.get(url);
+				for (Class cls: classList) {
+					whenClassScaned.accept(cls, container, reference);
+				}
+				return;
+			}
 			if (packageURL.getProtocol().equals("file")) {
 				packageURL = new URL("jar:"+packageURL.toExternalForm() + "!/");
 				packagePath = "jar:" + packagePath + "!/";
@@ -93,10 +102,14 @@ public class ArchivedScanner implements IPackageScanner{
 						String clazzName = ent.getName().replaceAll("/", ".").replace(".class", "");
 						Class<?> cls = Class.forName(clazzName);
 						whenClassScaned.accept(cls, container, reference);
+						classList.add(cls);
 					}catch (Throwable e) {
 						e.printStackTrace();
 					}
 				}
+			}
+			if (classList.size() > 0) {
+				cached.put(url,classList);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
