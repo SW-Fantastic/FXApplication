@@ -153,6 +153,26 @@ public class FXView extends AppComponent {
             } else {
                 this.resolveI18nNode(view.getPlaceholder());
             }
+        } else if(item instanceof TabPane) {
+            TabPane tabPane = (TabPane) item;
+            for (Tab tab:tabPane.getTabs()) {
+                tab.setText(this.i18n(tab.getText()));
+                Node content = tab.getContent();
+                if (content instanceof Parent) {
+                    this.i18n((Parent) content);
+                } else {
+                    this.resolveI18nNode(content);
+                }
+            }
+        } else if (item instanceof SplitPane) {
+              SplitPane splitPane = (SplitPane) item;
+              for (Node node : splitPane.getItems()) {
+                  if (node instanceof Parent) {
+                      this.i18n((Parent)node);
+                  } else {
+                      resolveI18nNode(node);
+                  }
+              }
         } else if (item instanceof Labeled) {
             Labeled labeled = (Labeled) item;
             labeled.setText(this.i18n(labeled.getText()));
